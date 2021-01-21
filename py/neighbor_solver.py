@@ -1,13 +1,14 @@
 #!/usr/bin/env python
 """
 This file is part of Colorization Using Optimization implementation in Python.
-Performs colorization.
+Class that searches the surroundings of a given point in order to find neighbors.
 """
 
 __author__ = "Lukasz Wierzbicki"
 __version__ = "1.0.0"
 __maintainer__ = "Lukasz Wierzbicki"
 __email__ = "01113202@pw.edu.pl"
+
 
 class NeighborSolver:
     def __init__(self, center, y_channel):
