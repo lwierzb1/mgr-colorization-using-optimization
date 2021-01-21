@@ -50,6 +50,7 @@ def parse_args():
 
 
 def show_result(result):
+    print("Press [esc] to close result window...")
     while True:
         cv2.imshow("result", result)
         k = cv2.waitKey(33)
