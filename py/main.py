@@ -50,8 +50,11 @@ def parse_args():
 
 
 def show_result(result):
-    cv2.imshow("result", result)
-    cv2.waitKey()
+    while True:
+        cv2.imshow("result", result)
+        k = cv2.waitKey(33)
+        if k == 27:  # Esc key to stop
+            break
 
 
 def store_result(result, path):

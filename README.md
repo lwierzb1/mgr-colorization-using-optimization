@@ -11,5 +11,5 @@
 ```
 python3 -m pipenv install
 python3 -m pipenv shell
-python3 main.py --input example.bmp --marked example_marked.bmp --store result.bmp
+python3 main.py --input ../test/example.bmp --marked ../test/example_marked.bmp --store result.bmp
 ```
