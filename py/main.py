@@ -11,10 +11,7 @@ Example usage:
 import argparse
 import os
 
-import cv2
-
-from colorization_solver import ColorizationSolver
-from image_processing_toolkit import read_as_float_matrix, rgb_matrix_to_image
+from image_colorizer import ImageColorizer
 
 __author__ = "Lukasz Wierzbicki"
 __version__ = "1.0.0"
@@ -49,33 +46,10 @@ def parse_args():
     return args
 
 
-def show_result(result):
-    print("Press [esc] to close result window...")
-    while True:
-        cv2.imshow("result", result)
-        k = cv2.waitKey(33)
-        if k == 27:  # Esc key to stop
-            break
-
-
-def store_result(result, path):
-    image = rgb_matrix_to_image(result)
-    cv2.imwrite(path, image)
-
-
 def main():
     args = parse_args()
-
-    # read images
-    grayscale_matrix = read_as_float_matrix(args.input)
-    marked_matrix = read_as_float_matrix(args.marked)
-
-    # perform colorization
-    solver = ColorizationSolver(grayscale_matrix, marked_matrix)
-    result = solver.solve()
-    show_result(result)
-    if args.store is not None:
-        store_result(result, args.store)
+    image_colorizer = ImageColorizer(args.input, args.marked, args.store)
+    image_colorizer.colorize()
 
 
 if __name__ == "__main__":

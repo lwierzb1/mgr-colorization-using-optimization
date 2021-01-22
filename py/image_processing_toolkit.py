@@ -31,16 +31,16 @@ def bgr_to_yuv_channels(matrix):
     return cv2.split(yuv_matrix)
 
 
-def yuv_channels_to_rgb_image(y_channel, u_channel, v_channel):
-    """Returns image in RGB space created from YUV channels.
+def yuv_channels_to_bgr_image(y_channel, u_channel, v_channel):
+    """Returns image in BGR space created from YUV channels.
 
     y_channel: luminance channel.
     u_channel: color channel.
     v_channel: color channel.
     """
     yuv_image = cv2.merge((y_channel.astype(np.float32), u_channel.astype(np.float32), v_channel.astype(np.float32)))
-    rgb_image = cv2.cvtColor(yuv_image, cv2.COLOR_YUV2BGR)
-    return rgb_image
+    bgr_image = cv2.cvtColor(yuv_image, cv2.COLOR_YUV2BGR)
+    return bgr_image
 
 
 def rgb_matrix_to_image(matrix):
@@ -48,6 +48,6 @@ def rgb_matrix_to_image(matrix):
 
     matrix: float matrix.
     """
-
-    rgb_image = (matrix * 255).astype(np.int)
+    matrix = np.clip(matrix, 0, 1)
+    rgb_image = (matrix * 255).astype("uint8")
     return rgb_image

@@ -7,7 +7,7 @@ Performs colorization.
 import numpy as np
 from neighbor_solver import NeighborSolver
 from optimization_solver import OptimizationSolver
-from image_processing_toolkit import bgr_to_yuv_channels, yuv_channels_to_rgb_image
+from image_processing_toolkit import bgr_to_yuv_channels, yuv_channels_to_bgr_image
 from mathematical_toolkit import compute_variance, ensure_is_not_zero
 
 __author__ = "Lukasz Wierzbicki"
@@ -59,7 +59,7 @@ class ColorizationSolver:
         optimization_solver = OptimizationSolver(wrs, has_hints)
         new_u, new_v = optimization_solver.optimize(u_channel, v_channel)
 
-        return yuv_channels_to_rgb_image(y_channel, new_u, new_v)
+        return yuv_channels_to_bgr_image(y_channel, new_u, new_v)
 
     def __get_yuv_channels_from_matrices(self):
         y_channel, _, _ = bgr_to_yuv_channels(self.__grayscale_bgr_matrix)
