@@ -1,14 +1,10 @@
 #!/usr/bin/env python
-"""
-This file is part of Colorization Using Optimization implementation in Python.
-Performs colorization.
-"""
-
 import numpy as np
-from neighbor_solver import NeighborSolver
-from optimization_solver import OptimizationSolver
+
 from image_processing_toolkit import bgr_to_yuv_channels, yuv_channels_to_bgr_image
 from mathematical_toolkit import compute_variance, ensure_is_not_zero
+from neighbor_solver import NeighborSolver
+from optimization_solver import OptimizationSolver
 
 __author__ = "Lukasz Wierzbicki"
 __version__ = "1.0.0"
@@ -42,11 +38,26 @@ def compute_weights_of_y_neighbor_values(neighbor_values, y_value):
 
 
 class ColorizationSolver:
+    """
+       A class used to solve Colorization problem. Using OptimizationSolver to colorize image.
+       Gets grayscale and marked matrices in BGR space, returns colorized image in BGR space.
+
+       Attributes
+       ----------
+       __grayscale_bgr_matrix
+           instance of CNN neural network
+
+       Methods
+       -------
+       solve()
+           Colorizes input grayscale image using CNN.
+       """
+
     def __init__(self, grayscale_bgr_matrix, marked_bgr_matrix):
         self.__grayscale_bgr_matrix = grayscale_bgr_matrix
         self.__marked_bgr_matrix = marked_bgr_matrix
-        self.__image_h, self._image_w, _ = grayscale_bgr_matrix.shape
-        self.__image_size = self._image_w * self.__image_h
+        self.__IMAGE_H, self._IMAGE_W, _ = grayscale_bgr_matrix.shape
+        self.__IMAGE_SIZE = self._IMAGE_W * self.__IMAGE_H
 
     def solve(self):
         # split to YUV channels
@@ -68,8 +79,8 @@ class ColorizationSolver:
 
     def __compute_weights(self, has_hints, y_channel):
         wrs = []
-        for row in range(self.__image_h):
-            for col in range(self._image_w):
+        for row in range(self.__IMAGE_H):
+            for col in range(self._IMAGE_W):
                 neighbor_solver = NeighborSolver((row, col), y_channel)
                 if not has_hints[row][col]:
                     neighbors = neighbor_solver.find_neighbors(wrs)
@@ -78,7 +89,7 @@ class ColorizationSolver:
                     for idx in range(len(weights)):
                         wrs.append((rows[idx], cols[idx], weights[idx]))
                 else:
-                    r = row * self._image_w + col
-                    c = row * self._image_w + col
+                    r = row * self._IMAGE_W + col
+                    c = row * self._IMAGE_W + col
                     wrs.append((r, c, 1.))
         return wrs

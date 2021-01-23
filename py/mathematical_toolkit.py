@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-"""General purpose statistical functions.
+"""General purpose mathematical functions.
 """
 
 import numpy as np

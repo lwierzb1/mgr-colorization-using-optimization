@@ -13,7 +13,7 @@ __email__ = "01113202@pw.edu.pl"
 class ImageColorizer(AbstractColorizer):
     """
     A class used to represent an Image implementation of abstract colorizer.
-    The image file provides the input data to colorization algorithm.
+    The grayscale image and marked image files provides the input data to colorization algorithm.
 
     ...
 

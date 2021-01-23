@@ -1,9 +1,4 @@
 #!/usr/bin/env python
-"""
-This file is part of Colorization Using Optimization implementation in Python.
-Class that searches the surroundings of a given point in order to find neighbors.
-"""
-
 __author__ = "Lukasz Wierzbicki"
 __version__ = "1.0.0"
 __maintainer__ = "Lukasz Wierzbicki"
@@ -11,8 +6,26 @@ __email__ = "01113202@pw.edu.pl"
 
 
 class NeighborSolver:
+    """
+       A class used to solve finding Y channel value of neighbor for given pixel.
+
+       Attributes
+       ----------
+       __center
+           pixel around which we are looking for neighbors
+
+      __WINDOW_WIDTH
+           the width of the search window
+
+       Methods
+       -------
+       find_neighbors(weights)
+           Finds neighbors for given pixel.
+           If the analyzed pixel is the pixel around which we are looking for neighbors, the weight should be increased
+       """
+
     def __init__(self, center, y_channel):
-        self.__window_width = 1
+        self.__WINDOW_WIDTH = 3
         self.__center = [center[0], center[1], y_channel]
         self.__y_channel = y_channel
 
@@ -20,10 +33,10 @@ class NeighborSolver:
         neighbors = []
         image_rows = self.__y_channel.shape[0]
         image_cols = self.__y_channel.shape[1]
-        window_r_min = max(0, self.__center[0] - self.__window_width)
-        window_r_max = min(image_rows, self.__center[0] + self.__window_width + 1)
-        window_c_min = max(0, self.__center[1] - self.__window_width)
-        window_c_max = min(image_cols, self.__center[1] + self.__window_width + 1)
+        window_r_min = max(0, self.__center[0] - self.__WINDOW_WIDTH)
+        window_r_max = min(image_rows, self.__center[0] + self.__WINDOW_WIDTH + 1)
+        window_c_min = max(0, self.__center[1] - self.__WINDOW_WIDTH)
+        window_c_max = min(image_cols, self.__center[1] + self.__WINDOW_WIDTH + 1)
         for r in range(window_r_min, window_r_max):
             for c in range(window_c_min, window_c_max):
                 row = self.__center[0] * image_cols + self.__center[1]

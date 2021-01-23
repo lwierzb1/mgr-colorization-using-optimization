@@ -1,10 +1,5 @@
 #!/usr/bin/env python
-"""This file is part of Colorization Using Optimization implementation in Python.
-Performs optimization process.
-Ax=b
-A- wrs matrix
-b- vector with u,v values
-"""
+
 
 import numpy as np
 import scipy
@@ -12,19 +7,36 @@ from scipy.sparse import linalg
 
 
 class OptimizationSolver:
+    """
+       A class used to obtain U and V channels based on weights and hints provided by user.
+
+       Attributes
+       ----------
+       __A
+           matrix with weights (https://www.cs.huji.ac.il/~yweiss/Colorization/)
+
+      __b
+           matrix created based on user provided hints
+
+       Methods
+       -------
+       optimize(u_channel, v_channel)
+           Creates new U and V channels for output image based on marked U and V channels.
+       """
+
     def __init__(self, wrs, has_hints):
         self.__wrs = wrs
         self.__has_hints = has_hints
-        self.__image_h, self._image_w = has_hints.shape
-        self.__image_size = self.__image_h * self._image_w
+        self.__IMAGE_H, self.__IMAGE_W = has_hints.shape
+        self.__IMAGE_SIZE = self.__IMAGE_H * self.__IMAGE_W
 
         row_idx, col_idx, wrs_value = zip(*self.__wrs)
         self.__A = scipy.sparse.csr_matrix((wrs_value, (row_idx, col_idx)),
-                                           (self.__image_size, self.__image_size))
+                                           (self.__IMAGE_SIZE, self.__IMAGE_SIZE))
         self.__b = np.zeros((self.__A.shape[0]))
 
     def optimize(self, u_channel, v_channel):
-        color_copy_for_nonzero = self.__has_hints.reshape(self.__image_size).copy()
+        color_copy_for_nonzero = self.__has_hints.reshape(self.__IMAGE_SIZE).copy()
         colored_idx = np.nonzero(color_copy_for_nonzero)
 
         # U space solving
@@ -35,7 +47,7 @@ class OptimizationSolver:
         return new_u, new_v
 
     def __compute_new_color_channel(self, color_channel, colored_idx):
-        color_channel_image = color_channel.reshape(self.__image_size)
+        color_channel_image = color_channel.reshape(self.__IMAGE_SIZE)
         self.__b[colored_idx] = color_channel_image[colored_idx]
         new_color_channel = linalg.spsolve(self.__A, self.__b)
-        return new_color_channel.reshape((self.__image_h, self._image_w))
+        return new_color_channel.reshape((self.__IMAGE_H, self.__IMAGE_W))
