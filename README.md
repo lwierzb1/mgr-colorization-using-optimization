@@ -4,7 +4,7 @@
 
 # Minimalne wymagania systemowe do uruchomienia aplikacji:
 
-- python 3.6
+
 - pipenv
 
 # Proces uruchamiania aplikacji
