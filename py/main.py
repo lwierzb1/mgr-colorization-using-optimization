@@ -12,6 +12,8 @@ import argparse
 import os
 
 from image_colorizer import ImageColorizer
+import time
+from statistics import mean
 
 __author__ = "Lukasz Wierzbicki"
 __version__ = "1.0.0"
@@ -48,8 +50,11 @@ def parse_args():
 
 def main():
     args = parse_args()
+    start = time.time()
     image_colorizer = ImageColorizer(args.input, args.marked, args.store)
     image_colorizer.colorize()
+    end = time.time()
+    print(end - start)
 
 
 if __name__ == "__main__":

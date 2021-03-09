@@ -3,6 +3,7 @@
 """
 
 import numpy as np
+import scipy.sparse as sc
 
 __author__ = "Lukasz Wierzbicki"
 __version__ = "1.0.0"
@@ -25,3 +26,11 @@ def ensure_is_not_zero(number):
     if number < 1e-6:
         number = 1e-6
     return number
+
+
+def jacobi(A, b, x, n):
+    D = A.diagonal()
+    R = A - sc.diags(D)
+    for i in range(n):
+        x = (b - R.dot(x)) / D
+    return x

@@ -4,6 +4,7 @@
 import numpy as np
 import scipy
 from scipy.sparse import linalg
+from mathematical_toolkit import jacobi
 
 
 class OptimizationSolver:
@@ -40,9 +41,9 @@ class OptimizationSolver:
         colored_idx = np.nonzero(color_copy_for_nonzero)
 
         # U space solving
-        new_u = self.__compute_new_color_channel(u_channel, colored_idx)
+        new_u = self.__compute_new_color_channel_jacobi(u_channel, colored_idx)
         # V space solving
-        new_v = self.__compute_new_color_channel(v_channel, colored_idx)
+        new_v = self.__compute_new_color_channel_jacobi(v_channel, colored_idx)
 
         return new_u, new_v
 
@@ -50,4 +51,10 @@ class OptimizationSolver:
         color_channel_image = color_channel.reshape(self.__IMAGE_SIZE)
         self.__b[colored_idx] = color_channel_image[colored_idx]
         new_color_channel = linalg.spsolve(self.__A, self.__b)
+        return new_color_channel.reshape((self.__IMAGE_H, self.__IMAGE_W))
+
+    def __compute_new_color_channel_jacobi(self, color_channel, colored_idx):
+        color_channel_image = color_channel.reshape(self.__IMAGE_SIZE)
+        self.__b[colored_idx] = color_channel_image[colored_idx]
+        new_color_channel = jacobi(self.__A, self.__b, np.zeros(self.__A.shape[0]), 700)
         return new_color_channel.reshape((self.__IMAGE_H, self.__IMAGE_W))

@@ -35,7 +35,7 @@ class ImageColorizer(AbstractColorizer):
     def colorize(self):
         result = self._colorization_solver.solve()
         result = rgb_matrix_to_image(result)
-        show_result(result)
+        # show_result(result)
         self.__store_result(result)
 
     def __store_result(self, result):
