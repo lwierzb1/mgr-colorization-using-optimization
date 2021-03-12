@@ -5,6 +5,7 @@ import numpy as np
 import scipy
 from scipy.sparse import linalg
 from mathematical_toolkit import jacobi
+import sys
 
 
 class OptimizationSolver:
@@ -40,12 +41,19 @@ class OptimizationSolver:
         color_copy_for_nonzero = self.__has_hints.reshape(self.__IMAGE_SIZE).copy()
         colored_idx = np.nonzero(color_copy_for_nonzero)
 
-        # U space solving
-        new_u = self.__compute_new_color_channel_jacobi(u_channel, colored_idx)
-        # V space solving
-        new_v = self.__compute_new_color_channel_jacobi(v_channel, colored_idx)
-
-        return new_u, new_v
+        approximation = int(sys.argv[8])
+        if approximation > 0:
+            # U space solving
+            new_u = self.__compute_new_color_channel_jacobi(u_channel, colored_idx, approximation)
+            # V space solving
+            new_v = self.__compute_new_color_channel_jacobi(v_channel, colored_idx, approximation)
+            return new_u, new_v
+        else:
+            # U space solving
+            new_u = self.__compute_new_color_channel(u_channel, colored_idx)
+            # V space solving
+            new_v = self.__compute_new_color_channel(v_channel, colored_idx)
+            return new_u, new_v
 
     def __compute_new_color_channel(self, color_channel, colored_idx):
         color_channel_image = color_channel.reshape(self.__IMAGE_SIZE)
@@ -53,8 +61,8 @@ class OptimizationSolver:
         new_color_channel = linalg.spsolve(self.__A, self.__b)
         return new_color_channel.reshape((self.__IMAGE_H, self.__IMAGE_W))
 
-    def __compute_new_color_channel_jacobi(self, color_channel, colored_idx):
+    def __compute_new_color_channel_jacobi(self, color_channel, colored_idx, approximation):
         color_channel_image = color_channel.reshape(self.__IMAGE_SIZE)
         self.__b[colored_idx] = color_channel_image[colored_idx]
-        new_color_channel = jacobi(self.__A, self.__b, np.zeros(self.__A.shape[0]), 700)
+        new_color_channel = jacobi(self.__A, self.__b, np.zeros(self.__A.shape[0]), approximation)
         return new_color_channel.reshape((self.__IMAGE_H, self.__IMAGE_W))

@@ -13,6 +13,7 @@ import os
 
 from image_colorizer import ImageColorizer
 import time
+import sys
 from statistics import mean
 
 __author__ = "Lukasz Wierzbicki"
@@ -27,6 +28,7 @@ def parse_args():
     parser.add_argument('--input', help='grayscale image')
     parser.add_argument('--marked', help='image with colour hints')
     parser.add_argument('--store', help='path to store result of algorithm')
+    parser.add_argument('--jacobi', help='path to store result of algorithm')
     args = parser.parse_args()
 
     if args.input is None:
