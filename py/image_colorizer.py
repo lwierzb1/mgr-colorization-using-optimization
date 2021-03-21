@@ -9,7 +9,7 @@ __version__ = "1.0.0"
 __maintainer__ = "Lukasz Wierzbicki"
 __email__ = "01113202@pw.edu.pl"
 
-
+import matplotlib.pyplot as plt
 class ImageColorizer(AbstractColorizer):
     """
     A class used to represent an Image implementation of abstract colorizer.
@@ -36,6 +36,8 @@ class ImageColorizer(AbstractColorizer):
         result = self._colorization_solver.solve()
         result = rgb_matrix_to_image(result)
         # show_result(result)
+        #plt.imshow(result)
+        #plt.show()
         self.__store_result(result)
 
     def __store_result(self, result):

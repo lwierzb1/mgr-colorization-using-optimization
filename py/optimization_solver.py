@@ -26,43 +26,38 @@ class OptimizationSolver:
            Creates new U and V channels for output image based on marked U and V channels.
        """
 
-    def __init__(self, wrs, has_hints):
-        self.__wrs = wrs
-        self.__has_hints = has_hints
+    def __init__(self, mat_a, has_hints):
+        self.__mat_a = mat_a
         self.__IMAGE_H, self.__IMAGE_W = has_hints.shape
         self.__IMAGE_SIZE = self.__IMAGE_H * self.__IMAGE_W
-
-        row_idx, col_idx, wrs_value = zip(*self.__wrs)
-        self.__A = scipy.sparse.csr_matrix((wrs_value, (row_idx, col_idx)),
-                                           (self.__IMAGE_SIZE, self.__IMAGE_SIZE))
-        self.__b = np.zeros((self.__A.shape[0]))
+        self.__idx_colored = np.nonzero(has_hints.reshape(self.__IMAGE_SIZE, order='F'))
 
     def optimize(self, u_channel, v_channel):
-        color_copy_for_nonzero = self.__has_hints.reshape(self.__IMAGE_SIZE).copy()
-        colored_idx = np.nonzero(color_copy_for_nonzero)
-
         approximation = int(sys.argv[8])
+
         if approximation > 0:
             # U space solving
-            new_u = self.__compute_new_color_channel_jacobi(u_channel, colored_idx, approximation)
+            new_u = self.__compute_new_color_channel_jacobi(u_channel, approximation)
             # V space solving
-            new_v = self.__compute_new_color_channel_jacobi(v_channel, colored_idx, approximation)
+            new_v = self.__compute_new_color_channel_jacobi(v_channel, approximation)
             return new_u, new_v
         else:
             # U space solving
-            new_u = self.__compute_new_color_channel(u_channel, colored_idx)
+            new_u = self.__compute_new_color_channel(u_channel)
             # V space solving
-            new_v = self.__compute_new_color_channel(v_channel, colored_idx)
+            new_v = self.__compute_new_color_channel(v_channel)
             return new_u, new_v
 
-    def __compute_new_color_channel(self, color_channel, colored_idx):
-        color_channel_image = color_channel.reshape(self.__IMAGE_SIZE)
-        self.__b[colored_idx] = color_channel_image[colored_idx]
-        new_color_channel = linalg.spsolve(self.__A, self.__b)
-        return new_color_channel.reshape((self.__IMAGE_H, self.__IMAGE_W))
+    def __compute_new_color_channel(self, color_channel):
+        b = np.zeros(self.__IMAGE_SIZE)
+        pic_channel_flat = color_channel.reshape(self.__IMAGE_SIZE, order='F')
+        b[self.__idx_colored] = pic_channel_flat[self.__idx_colored]
+        new_color_channel = scipy.sparse.linalg.spsolve(self.__mat_a, b)
+        return np.reshape(new_color_channel, (self.__IMAGE_H, self.__IMAGE_W), order='F')
 
-    def __compute_new_color_channel_jacobi(self, color_channel, colored_idx, approximation):
-        color_channel_image = color_channel.reshape(self.__IMAGE_SIZE)
-        self.__b[colored_idx] = color_channel_image[colored_idx]
-        new_color_channel = jacobi(self.__A, self.__b, np.zeros(self.__A.shape[0]), approximation)
-        return new_color_channel.reshape((self.__IMAGE_H, self.__IMAGE_W))
+    def __compute_new_color_channel_jacobi(self, color_channel, approximation):
+        b = np.zeros(self.__IMAGE_SIZE)
+        pic_channel_flat = color_channel.reshape(self.__IMAGE_SIZE, order='F')
+        b[self.__idx_colored] = pic_channel_flat[self.__idx_colored]
+        new_color_channel = jacobi(self.__mat_a, b, np.zeros(self.__mat_a.shape[0]), approximation)
+        return np.reshape(new_color_channel, (self.__IMAGE_H, self.__IMAGE_W), order='F')

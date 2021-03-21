@@ -26,23 +26,20 @@ class NeighborSolver:
 
     def __init__(self, center, y_channel):
         self.__WINDOW_WIDTH = 3
-        self.__center = [center[0], center[1], y_channel]
+        self.center = [center[0], center[1], y_channel[center]]
         self.__y_channel = y_channel
+        self.neighbors = []
 
-    def find_neighbors(self, weights):
-        neighbors = []
+    def find_neighbors(self):
         image_rows = self.__y_channel.shape[0]
         image_cols = self.__y_channel.shape[1]
-        window_r_min = max(0, self.__center[0] - self.__WINDOW_WIDTH)
-        window_r_max = min(image_rows, self.__center[0] + self.__WINDOW_WIDTH + 1)
-        window_c_min = max(0, self.__center[1] - self.__WINDOW_WIDTH)
-        window_c_max = min(image_cols, self.__center[1] + self.__WINDOW_WIDTH + 1)
+        window_r_min = max(0, self.center[0] - self.__WINDOW_WIDTH)
+        window_r_max = min(image_rows, self.center[0] + self.__WINDOW_WIDTH + 1)
+        window_c_min = max(0, self.center[1] - self.__WINDOW_WIDTH)
+        window_c_max = min(image_cols, self.center[1] + self.__WINDOW_WIDTH + 1)
         for r in range(window_r_min, window_r_max):
             for c in range(window_c_min, window_c_max):
-                row = self.__center[0] * image_cols + self.__center[1]
-                col = r * image_cols + c
-                if r == self.__center[0] and c == self.__center[1]:
-                    weights.append((row, col, 1.))
+                if r == self.center[0] and c == self.center[1]:
+                    continue
                 else:
-                    neighbors.append((row, col, self.__y_channel[r, c]))
-        return neighbors
+                    self.neighbors.append((r, c, self.__y_channel[r, c]))

@@ -11,15 +11,22 @@ __maintainer__ = "Lukasz Wierzbicki"
 __email__ = "01113202@pw.edu.pl"
 
 
-def read_as_float_matrix(path):
+def gaussian_blur(image):
+    return cv2.GaussianBlur(image, (11, 11), 0)
+
+
+def read_image(path):
+    return cv2.imread(path)
+
+
+def bgr_as_float_matrix(bgr):
     """Returns float matrix representation of image specified with path.
     Normalization will help to remove distortions caused by lights and shadows in an image.
 
     path: Path to image. data. It can be absolute or relative.
     """
 
-    bgr_image = cv2.imread(path)
-    return bgr_image.astype(np.float32) / 255.
+    return bgr.astype(np.float32) / 255.
 
 
 def bgr_to_yuv_channels(matrix):

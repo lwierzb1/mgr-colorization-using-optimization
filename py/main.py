@@ -10,11 +10,9 @@ Example usage:
 
 import argparse
 import os
+import time
 
 from image_colorizer import ImageColorizer
-import time
-import sys
-from statistics import mean
 
 __author__ = "Lukasz Wierzbicki"
 __version__ = "1.0.0"
