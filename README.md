@@ -1,13 +1,16 @@
 # [Colorization using optimization](https://www.cs.huji.ac.il/~yweiss/Colorization/colorization-siggraph04.pdf)
+
 ### Implementacja algorytmu z wykorzystaniem języka Python.
+
 ### Łukasz Wierzbicki, Politechnika Warszawska
 
 # Minimalne wymagania systemowe do uruchomienia aplikacji:
 
-
 - pipenv
+- icc-rt
 
 # Proces uruchamiania aplikacji
+
 ```
 python3 -m pipenv install
 python3 -m pipenv shell

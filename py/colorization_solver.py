@@ -4,14 +4,16 @@ import scipy.sparse
 
 from image_processing_toolkit import bgr_to_yuv_channels, yuv_channels_to_bgr_image
 from mathematical_toolkit import compute_variance, ensure_is_not_zero
-from neighbor_solver import NeighborSolver
 from optimization_solver import OptimizationSolver
-from numba import jit
-
+import time
 __author__ = "Lukasz Wierzbicki"
 __version__ = "1.0.0"
 __maintainer__ = "Lukasz Wierzbicki"
 __email__ = "01113202@pw.edu.pl"
+
+from py.weights_cpu_solver import WeightsCpuSolver
+
+from py.weights_gpu_solver import WeightsGpuSolver
 
 
 def compute_weights_of_y_neighbor_values(neighbor_values, y_value):
@@ -60,14 +62,18 @@ class ColorizationSolver:
         self.__marked_bgr_matrix = marked_bgr_matrix
         self.__IMAGE_H, self._IMAGE_W, _ = grayscale_bgr_matrix.shape
         self.__IMAGE_SIZE = self._IMAGE_W * self.__IMAGE_H
+        self._weights_solver = WeightsGpuSolver()
 
     def solve(self):
         # split to YUV channels
         y_channel, u_channel, v_channel = self.__get_yuv_channels_from_matrices()
         has_hints = abs(self.__grayscale_bgr_matrix - self.__marked_bgr_matrix).sum(2) > 0.01
-
-        wrs = self.__compute_weights(has_hints, y_channel)
+        s = time.time()
+        wrs = self._weights_solver.compute_wrs(has_hints, y_channel)
+        s1 = time.time()
+        print(s-s1)
         mat_a = self.__map_wrs_to_sparse_matrix(wrs)
+        print(s1-time.time())
         # perform optimization
         optimization_solver = OptimizationSolver(mat_a, has_hints)
 
@@ -78,32 +84,6 @@ class ColorizationSolver:
         y_channel, _, _ = bgr_to_yuv_channels(self.__grayscale_bgr_matrix)
         _, u_channel, v_channel = bgr_to_yuv_channels(self.__marked_bgr_matrix)
         return y_channel, u_channel, v_channel
-
-    def __compute_weights(self, has_hints, y_channel):
-        wrs = []
-        for row in range(self.__IMAGE_H):
-            for col in range(self._IMAGE_W):
-                if not has_hints[row][col]:
-                    neighbor_solver = NeighborSolver((row, col), y_channel)
-                    neighbor_solver.find_neighbors()
-                    weights = self.__compute_affinity(neighbor_solver)
-                    for w in weights:
-                        wrs.append([(row, col), (w[0], w[1]), w[2]])
-                wrs.append([(row, col), (row, col), 1.])
-        return wrs
-
-    def __compute_affinity(self, neighbor_solver):
-        neighbors = np.array(neighbor_solver.neighbors)
-        sy = neighbors[:, 2]
-        cy = neighbor_solver.center[2]
-        diff = sy - cy
-        variance = compute_variance(np.append(sy, cy))
-        wrs = np.exp(-(diff ** 2) / variance)
-        summed_values = np.sum(wrs)
-        # make the weighting function sum up to 1
-        wrs = - wrs / summed_values
-        neighbors[:, 2] = wrs
-        return neighbors
 
     def to_seq(self, r, c, rows):
         return c * rows + r

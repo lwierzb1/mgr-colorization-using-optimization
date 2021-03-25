@@ -9,7 +9,9 @@ __version__ = "1.0.0"
 __maintainer__ = "Lukasz Wierzbicki"
 __email__ = "01113202@pw.edu.pl"
 
-import matplotlib.pyplot as plt
+from py.colorization_solver import ColorizationSolver
+
+
 class ImageColorizer(AbstractColorizer):
     """
     A class used to represent an Image implementation of abstract colorizer.
@@ -31,13 +33,11 @@ class ImageColorizer(AbstractColorizer):
     def __init__(self, grayscale, marked, destination):
         super().__init__(grayscale, marked)
         self.__destination = destination
+        self.__colorization_solver = ColorizationSolver(self._grayscale_matrix, self._marked_matrix)
 
     def colorize(self):
-        result = self._colorization_solver.solve()
+        result = self.__colorization_solver.solve()
         result = rgb_matrix_to_image(result)
-        # show_result(result)
-        #plt.imshow(result)
-        #plt.show()
         self.__store_result(result)
 
     def __store_result(self, result):

@@ -35,7 +35,6 @@ class AbstractColorizer(ABC):
         bgr_marked = read_image(marked)
         self._grayscale_matrix = bgr_as_float_matrix(bgr_grayscale)
         self._marked_matrix = bgr_as_float_matrix(bgr_marked)
-        self._colorization_solver = ColorizationSolver(self._grayscale_matrix, self._marked_matrix)
 
     def colorize(self):
         pass
