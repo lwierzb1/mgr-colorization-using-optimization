@@ -15,6 +15,10 @@ def gaussian_blur(image):
     return cv2.GaussianBlur(image, (11, 11), 0)
 
 
+def write_image(image, path):
+    cv2.imwrite(path, image)
+
+
 def read_image(path):
     return cv2.imread(path)
 

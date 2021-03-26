@@ -5,11 +5,10 @@ __email__ = "01113202@pw.edu.pl"
 
 import numpy as np
 from numba import jit
-
 from neighbor_solver import NeighborSolver
 
 
-class NeighborGpuSolver(NeighborSolver):
+class NeighborOptimizedSolver(NeighborSolver):
 
     def __init__(self):
         super().__init__()
@@ -17,11 +16,11 @@ class NeighborGpuSolver(NeighborSolver):
 
     def find_neighbors(self, center, y_channel):
         center = np.array(center, dtype=np.float32)
-        return find_neighbors_gpu(y_channel, center, self.__WINDOW_WIDTH)
+        return find_neighbors_optimized(y_channel, center, self.__WINDOW_WIDTH)
 
 
 @jit(nopython=True, cache=True, fastmath=True, nogil=True)
-def find_neighbors_gpu(y_channel, center, window_width):
+def find_neighbors_optimized(y_channel, center, window_width):
     neighbors = []
     image_rows = y_channel.shape[0]
     image_cols = y_channel.shape[1]

@@ -12,12 +12,14 @@ import argparse
 import os
 import time
 
-from image_colorizer import ImageColorizer
-
 __author__ = "Lukasz Wierzbicki"
 __version__ = "1.0.0"
 __maintainer__ = "Lukasz Wierzbicki"
 __email__ = "01113202@pw.edu.pl"
+
+from py.image_colorizer import ImageColorizer
+from py.image_colorizer_multiprocess import ImageColorizerMultiprocess
+from image_processing_toolkit import write_image
 
 
 def parse_args():
@@ -51,8 +53,9 @@ def parse_args():
 def main():
     args = parse_args()
     start = time.time()
-    image_colorizer = ImageColorizer(args.input, args.marked, args.store)
-    image_colorizer.colorize()
+    image_colorizer = ImageColorizer(args.input, args.marked)
+    result = image_colorizer.colorize()
+    write_image(result, args.store)
     end = time.time()
     print(end - start)
 

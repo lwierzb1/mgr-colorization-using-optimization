@@ -15,6 +15,8 @@ __email__ = "01113202@pw.edu.pl"
 
 from py.weights_cpu_solver import WeightsCpuSolver
 
+from py.weights_optimized_solver import WeightsOptimizedSolver
+
 
 def compute_weights_of_y_neighbor_values(neighbor_values, y_value):
     """Computes weights of neighbor pixels for future optimization see:
@@ -62,7 +64,7 @@ class ColorizationSolver:
         self.__marked_bgr_matrix = marked_bgr_matrix
         self.__IMAGE_H, self._IMAGE_W, _ = grayscale_bgr_matrix.shape
         self.__IMAGE_SIZE = self._IMAGE_W * self.__IMAGE_H
-        self._weights_solver = WeightsCpuSolver()
+        self._weights_solver = WeightsOptimizedSolver()
 
     def solve(self):
         # split to YUV channels
@@ -73,7 +75,6 @@ class ColorizationSolver:
         s1 = time.time()
         print('weights took: ', s1 - s)
         mat_a = self.__map_wrs_to_sparse_matrix(wrs)
-        # mat_a = np.array(wrs)
         s2 = time.time()
         print('mapping to sparse took: ', s2 - s1)
         # perform optimization

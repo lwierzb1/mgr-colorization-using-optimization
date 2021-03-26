@@ -1,11 +1,12 @@
-from py.affinity_gpu_solver import AffinityGpuSolver
-from py.neighbor_gpu_solver import NeighborGpuSolver
+from mathematical_toolkit import to_seq
+from py.affinity_optimized_solver import AffinityOptimizedSolver
+from py.neighbor_optimized_solver import NeighborOptimizedSolver
 from py.weights_solver import WeightsSolver
 
 
-class WeightsGpuSolver(WeightsSolver):
+class WeightsOptimizedSolver(WeightsSolver):
     def __init__(self):
-        super().__init__(NeighborGpuSolver(), AffinityGpuSolver())
+        super().__init__(NeighborOptimizedSolver(), AffinityOptimizedSolver())
 
     def compute_wrs(self, has_hints, y_channel):
         height = has_hints.shape[0]
@@ -17,6 +18,7 @@ class WeightsGpuSolver(WeightsSolver):
                     neighbors = self._neighbor_solver.find_neighbors((row, col), y_channel)
                     weights = self._affinity_solver.compute_affinity(y_channel[(row, col)], neighbors[:, 2])
                     for idx in range(len(weights)):
-                        wrs.append([(row, col), (neighbors[idx][0], neighbors[idx][1]), weights[idx]])
-                wrs.append([(row, col), (row, col), 1.])
+                        wrs.append([to_seq(row, col, height), to_seq(neighbors[idx][0], neighbors[idx][1], height),
+                                    weights[idx]])
+                wrs.append([to_seq(row, col, height), to_seq(row, col, height), 1.])
         return wrs
