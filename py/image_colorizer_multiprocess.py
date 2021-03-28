@@ -4,8 +4,9 @@ from multiprocessing import Pool
 import numpy as np
 
 from abstract_colorizer import AbstractColorizer
-from py.colorization_solver import ColorizationSolver
-from py.image_processing_toolkit import rgb_matrix_to_image
+from colorization_solver import ColorizationSolver
+from colorization_optimized_solver import ColorizationOptimizedSolver
+from image_processing_toolkit import rgb_matrix_to_image
 
 __author__ = "Lukasz Wierzbicki"
 __version__ = "1.0.0"
@@ -54,5 +55,5 @@ class ImageColorizerMultiprocess(AbstractColorizer):
         grayscale_arrays = np.array_split(self._grayscale_matrix, number_of_splits)
         marked_arrays = np.array_split(self._marked_matrix, number_of_splits)
         for i in range(number_of_splits):
-            solvers.append(ColorizationSolver(grayscale_arrays[i], marked_arrays[i]))
+            solvers.append(ColorizationOptimizedSolver(grayscale_arrays[i], marked_arrays[i]))
         return solvers

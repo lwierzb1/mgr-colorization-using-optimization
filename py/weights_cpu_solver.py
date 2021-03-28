@@ -1,6 +1,6 @@
-from py.affinity_cpu_solver import AffinityCpuSolver
-from py.neighbor_cpu_solver import NeighborCpuSolver
-from py.weights_solver import WeightsSolver
+from affinity_cpu_solver import AffinityCpuSolver
+from neighbor_cpu_solver import NeighborCpuSolver
+from weights_solver import WeightsSolver
 
 
 def _to_seq(r, c, rows):
@@ -15,14 +15,17 @@ class WeightsCpuSolver(WeightsSolver):
         height = has_hints.shape[0]
         width = has_hints.shape[1]
 
-        wrs = []
+        image_coordinates, neighbors_coordinates, wrs = [], [], []
         for row in range(height):
             for col in range(width):
                 if not has_hints[row][col]:
                     neighbors = self._neighbor_solver.find_neighbors((row, col), y_channel)
                     weights = self._affinity_solver.compute_affinity(y_channel[(row, col)], neighbors[:, 2])
                     for idx in range(len(weights)):
-                        wrs.append([_to_seq(row, col, height), _to_seq(neighbors[idx][0], neighbors[idx][1], height),
-                                    weights[idx]])
-                wrs.append([_to_seq(row, col, height), _to_seq(row, col, height), 1.])
-        return wrs
+                        image_coordinates.append(_to_seq(row, col, height))
+                        neighbors_coordinates.append(_to_seq(neighbors[idx][0], neighbors[idx][1], height))
+                        wrs.append(weights[idx])
+                image_coordinates.append(_to_seq(row, col, height))
+                neighbors_coordinates.append(_to_seq(row, col, height))
+                wrs.append(1.)
+        return image_coordinates, neighbors_coordinates, wrs

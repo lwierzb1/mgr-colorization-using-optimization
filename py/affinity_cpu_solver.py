@@ -1,6 +1,6 @@
 import numpy as np
 
-from py.affinity_solver import AffinitySolver
+from affinity_solver import AffinitySolver
 
 
 class AffinityCpuSolver(AffinitySolver):

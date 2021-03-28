@@ -8,54 +8,24 @@ Example usage:
   $ python main.py --input bw.bmp --marked marked.bmp
 """
 
-import argparse
-import os
 import time
+from image_colorizer import ImageColorizer
+from image_colorizer_multiprocess import ImageColorizerMultiprocess
+from image_processing_toolkit import write_image
+from singleton_config import SingletonConfig
 
 __author__ = "Lukasz Wierzbicki"
 __version__ = "1.0.0"
 __maintainer__ = "Lukasz Wierzbicki"
 __email__ = "01113202@pw.edu.pl"
 
-from py.image_colorizer import ImageColorizer
-from py.image_colorizer_multiprocess import ImageColorizerMultiprocess
-from image_processing_toolkit import write_image
-
-
-def parse_args():
-    # parse command line arguments
-    parser = argparse.ArgumentParser(description='Colorization using optimization')
-    parser.add_argument('--input', help='grayscale image')
-    parser.add_argument('--marked', help='image with colour hints')
-    parser.add_argument('--store', help='path to store result of algorithm')
-    parser.add_argument('--jacobi', help='path to store result of algorithm')
-    args = parser.parse_args()
-
-    if args.input is None:
-        print('Please give the input greyscale image name.')
-        exit()
-
-    if os.path.isfile(args.input) == 0:
-        print('Input file does not exist')
-        exit()
-
-    if args.marked is None:
-        print('Please give the hint image name.')
-        exit()
-
-    if os.path.isfile(args.marked) == 0:
-        print('Hint file does not exist')
-        exit()
-
-    return args
-
 
 def main():
-    args = parse_args()
+    config = SingletonConfig.get_instance()
     start = time.time()
-    image_colorizer = ImageColorizer(args.input, args.marked)
+    image_colorizer = ImageColorizerMultiprocess(config.get_args().input, config.get_args().marked)
     result = image_colorizer.colorize()
-    write_image(result, args.store)
+    write_image(result, config.get_args().store)
     end = time.time()
     print(end - start)
 

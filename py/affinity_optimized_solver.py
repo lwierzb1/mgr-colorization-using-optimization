@@ -1,7 +1,7 @@
 import numpy as np
 from numba import jit
 
-from py.affinity_solver import AffinitySolver
+from affinity_solver import AffinitySolver
 
 
 class AffinityOptimizedSolver(AffinitySolver):

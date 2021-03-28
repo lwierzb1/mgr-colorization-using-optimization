@@ -8,7 +8,8 @@ __version__ = "1.0.0"
 __maintainer__ = "Lukasz Wierzbicki"
 __email__ = "01113202@pw.edu.pl"
 
-from py.colorization_solver import ColorizationSolver
+from colorization_solver import ColorizationSolver
+from colorization_optimized_solver import ColorizationOptimizedSolver
 
 
 class ImageColorizer(AbstractColorizer):
@@ -32,5 +33,4 @@ class ImageColorizer(AbstractColorizer):
         self.__colorization_solver = ColorizationSolver(self._grayscale_matrix, self._marked_matrix)
 
     def colorize(self):
-        result = self.__colorization_solver.solve()
-        return rgb_matrix_to_image(result)
+        return self.__colorization_solver.solve()

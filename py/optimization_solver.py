@@ -8,6 +8,8 @@ from scipy.sparse.linalg import lgmres
 from mathematical_toolkit import jacobi
 import sys
 
+from singleton_config import SingletonConfig
+
 
 class OptimizationSolver:
     """
@@ -15,11 +17,8 @@ class OptimizationSolver:
 
        Attributes
        ----------
-       __A
+       __mat_a
            matrix with weights (https://www.cs.huji.ac.il/~yweiss/Colorization/)
-
-      __b
-           matrix created based on user provided hints
 
        Methods
        -------
@@ -34,15 +33,26 @@ class OptimizationSolver:
         self.__idx_colored = np.nonzero(has_hints.reshape(self.__IMAGE_SIZE, order='F'))
 
     def optimize(self, u_channel, v_channel):
-        approximation = int(sys.argv[8])
+        config = SingletonConfig.get_instance()
+        jacobi_approximation = config.get_args().jacobi
+        lgmres = config.get_args().lgmres
 
-        if approximation > 0:
+        if jacobi_approximation is not None:
+            print('using jacobi', jacobi_approximation)
             # U space solving
-            new_u = self.__compute_new_color_channel_jacobi(u_channel, approximation)
+            new_u = self.__compute_new_color_channel_jacobi(u_channel, jacobi_approximation)
             # V space solving
-            new_v = self.__compute_new_color_channel_jacobi(v_channel, approximation)
+            new_v = self.__compute_new_color_channel_jacobi(v_channel, jacobi_approximation)
+            return new_u, new_v
+        elif lgmres is not None:
+            print('using lgmres')
+            # U space solving
+            new_u = self.__compute_new_color_channel_lgmres(u_channel)
+            # V space solving
+            new_v = self.__compute_new_color_channel_lgmres(v_channel)
             return new_u, new_v
         else:
+            print('using linalg')
             # U space solving
             new_u = self.__compute_new_color_channel(u_channel)
             # V space solving

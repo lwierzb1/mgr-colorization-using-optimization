@@ -7,13 +7,12 @@ import scipy.sparse
 from image_processing_toolkit import bgr_to_yuv_channels, yuv_channels_to_bgr_image
 from mathematical_toolkit import compute_variance, ensure_is_not_zero
 from optimization_solver import OptimizationSolver
+from weights_cpu_solver import WeightsCpuSolver
 
 __author__ = "Lukasz Wierzbicki"
 __version__ = "1.0.0"
 __maintainer__ = "Lukasz Wierzbicki"
 __email__ = "01113202@pw.edu.pl"
-
-from py.weights_cpu_solver import WeightsCpuSolver
 
 
 def compute_weights_of_y_neighbor_values(neighbor_values, y_value):
@@ -69,10 +68,10 @@ class ColorizationSolver:
         y_channel, u_channel, v_channel = self.__get_yuv_channels_from_matrices()
         has_hints = abs(self.__grayscale_bgr_matrix - self.__marked_bgr_matrix).sum(2) > 0.01
         s = time.time()
-        wrs = self._weights_solver.compute_wrs(has_hints, y_channel)
+        image_coordinates, neighbors_coordinates, wrs = self._weights_solver.compute_wrs(has_hints, y_channel)
         s1 = time.time()
         print('weights took: ', s1 - s)
-        mat_a = self.__map_wrs_to_sparse_matrix(wrs)
+        mat_a = self.__map_wrs_to_sparse_matrix(image_coordinates, neighbors_coordinates, wrs)
         # mat_a = np.array(wrs)
         s2 = time.time()
         print('mapping to sparse took: ', s2 - s1)
@@ -84,12 +83,14 @@ class ColorizationSolver:
         print('optimize: ', time.time() - s3)
         return yuv_channels_to_bgr_image(y_channel, new_u, new_v)
 
+    def remove_zero_pixels(self, old_color_channel, new_color_channel):
+        pass
+
     def __get_yuv_channels_from_matrices(self):
         y_channel, _, _ = bgr_to_yuv_channels(self.__grayscale_bgr_matrix)
         _, u_channel, v_channel = bgr_to_yuv_channels(self.__marked_bgr_matrix)
         return y_channel, u_channel, v_channel
 
-    def __map_wrs_to_sparse_matrix(self, wrs):
-        wrs = np.array(wrs)
-        return scipy.sparse.csr_matrix((wrs[:, 2], (wrs[:, 0], wrs[:, 1])),
+    def __map_wrs_to_sparse_matrix(self, image_coordinates, neighbors_coordinates, wrs):
+        return scipy.sparse.csr_matrix((wrs, (image_coordinates, neighbors_coordinates)),
                                        shape=(self.__IMAGE_SIZE, self.__IMAGE_SIZE))
