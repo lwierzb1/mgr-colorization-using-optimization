@@ -4,7 +4,7 @@
 import numpy as np
 import scipy
 from scipy.sparse import linalg
-from scipy.sparse.linalg import lgmres
+from scipy.sparse.linalg import lgmres, cg
 from mathematical_toolkit import jacobi
 import sys
 
@@ -70,7 +70,7 @@ class OptimizationSolver:
         b = np.zeros(self.__IMAGE_SIZE)
         pic_channel_flat = color_channel.reshape(self.__IMAGE_SIZE, order='F')
         b[self.__idx_colored] = pic_channel_flat[self.__idx_colored]
-        new_color_channel = jacobi(self.__mat_a, b, np.zeros(self.__mat_a.shape[0]), approximation)
+        new_color_channel = jacobi(self.__mat_a, b, approximation)
         return np.reshape(new_color_channel, (self.__IMAGE_H, self.__IMAGE_W), order='F')
 
     def __compute_new_color_channel_lgmres(self, color_channel):

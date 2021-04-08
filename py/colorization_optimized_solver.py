@@ -3,17 +3,19 @@ import time
 
 import numpy as np
 import scipy.sparse
+import cv2
+import matplotlib.pyplot as plt
 
-from image_processing_toolkit import bgr_to_yuv_channels, yuv_channels_to_bgr_image
+from image_processing_toolkit import bgr_to_yuv_channels, yuv_channels_to_bgr_matrix
 from mathematical_toolkit import compute_variance, ensure_is_not_zero
 from optimization_solver import OptimizationSolver
+import color_conv
+from weights_optimized_solver import WeightsOptimizedSolver
 
 __author__ = "Lukasz Wierzbicki"
 __version__ = "1.0.0"
 __maintainer__ = "Lukasz Wierzbicki"
 __email__ = "01113202@pw.edu.pl"
-
-from weights_optimized_solver import WeightsOptimizedSolver
 
 
 def compute_weights_of_y_neighbor_values(neighbor_values, y_value):
@@ -81,23 +83,12 @@ class ColorizationOptimizedSolver:
         s3 = time.time()
         new_u, new_v = optimization_solver.optimize(u_channel, v_channel)
         print('optimize: ', time.time() - s3)
-        self.remove_zero_pixels(u_channel, new_u)
-        self.remove_zero_pixels(v_channel, new_v)
-        return yuv_channels_to_bgr_image(y_channel, new_u, new_v)
-
-    def remove_zero_pixels(self, old_channel, new_channel):
-        aaa = new_channel.shape
-        bbb = old_channel.shape
-        for i in range(new_channel.shape[0]):
-            for j in range(new_channel.shape[1]):
-                c = new_channel[i][j]
-                if c < 0.1:
-                    d = old_channel[i][j]
-                    new_channel[i][j] = old_channel[i][j]
+        return yuv_channels_to_bgr_matrix(y_channel, new_u, new_v)
 
     def __get_yuv_channels_from_matrices(self):
         y_channel, _, _ = bgr_to_yuv_channels(self.__grayscale_bgr_matrix)
         _, u_channel, v_channel = bgr_to_yuv_channels(self.__marked_bgr_matrix)
+
         return y_channel, u_channel, v_channel
 
     def __map_wrs_to_sparse_matrix(self, image_coordinates, neighbors_coordinates, wrs):

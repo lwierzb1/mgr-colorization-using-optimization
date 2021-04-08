@@ -13,7 +13,7 @@ from image_colorizer import ImageColorizer
 from image_colorizer_multiprocess import ImageColorizerMultiprocess
 from image_processing_toolkit import write_image
 from singleton_config import SingletonConfig
-
+from image_processing_toolkit import bgr_matrix_to_image
 __author__ = "Lukasz Wierzbicki"
 __version__ = "1.0.0"
 __maintainer__ = "Lukasz Wierzbicki"
@@ -25,9 +25,9 @@ def main():
     start = time.time()
     image_colorizer = ImageColorizerMultiprocess(config.get_args().input, config.get_args().marked)
     result = image_colorizer.colorize()
-    write_image(result, config.get_args().store)
     end = time.time()
     print(end - start)
+    write_image(bgr_matrix_to_image(result), config.get_args().store)
 
 
 if __name__ == "__main__":

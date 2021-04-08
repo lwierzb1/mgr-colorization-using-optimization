@@ -4,6 +4,7 @@
 
 import numpy as np
 import scipy.sparse as sc
+import scipy.sparse.linalg as linalg
 from numba import jit
 
 __author__ = "Lukasz Wierzbicki"
@@ -31,11 +32,21 @@ def ensure_is_not_zero(number):
     return number
 
 
-def jacobi(A, b, x, n):
+def jacobi(A, b, n, tol=1e-3):
+    x = np.zeros(A.shape[0])
     D = A.diagonal()
     R = A - sc.diags(D)
-    for i in range(n):
-        x = (b - R.dot(x)) / D
+    i = 0
+    while True:
+        xk = (b - R.dot(x)) / D
+        norm = np.linalg.norm(xk - x)
+        if norm < tol or i > n:
+            print('iteracja: ', i)
+            print('norma: ', norm)
+            break
+        else:
+            x = xk
+            i += 1
     return x
 
 

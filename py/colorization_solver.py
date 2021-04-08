@@ -4,7 +4,7 @@ import time
 import numpy as np
 import scipy.sparse
 
-from image_processing_toolkit import bgr_to_yuv_channels, yuv_channels_to_bgr_image
+from image_processing_toolkit import bgr_to_yuv_channels, yuv_channels_to_bgr_matrix
 from mathematical_toolkit import compute_variance, ensure_is_not_zero
 from optimization_solver import OptimizationSolver
 from weights_cpu_solver import WeightsCpuSolver
@@ -77,14 +77,10 @@ class ColorizationSolver:
         print('mapping to sparse took: ', s2 - s1)
         # perform optimization
         optimization_solver = OptimizationSolver(mat_a, has_hints)
-
         s3 = time.time()
         new_u, new_v = optimization_solver.optimize(u_channel, v_channel)
         print('optimize: ', time.time() - s3)
-        return yuv_channels_to_bgr_image(y_channel, new_u, new_v)
-
-    def remove_zero_pixels(self, old_color_channel, new_color_channel):
-        pass
+        return yuv_channels_to_bgr_matrix(y_channel, new_u, new_v)
 
     def __get_yuv_channels_from_matrices(self):
         y_channel, _, _ = bgr_to_yuv_channels(self.__grayscale_bgr_matrix)

@@ -31,6 +31,7 @@ class SingletonConfig:
         parser.add_argument('--store', help='path to store result of algorithm')
         parser.add_argument('--jacobi', help='path to store result of algorithm')
         parser.add_argument('--lgmres', help='path to store result of algorithm')
+        parser.add_argument('--processes', help='path to store result of algorithm')
         self.__args = parser.parse_args()
 
         if self.__args.input is None:
@@ -47,6 +48,9 @@ class SingletonConfig:
 
         if self.__args.jacobi is not None:
             self.__args.jacobi = int(self.__args.jacobi)
+
+        if self.__args.processes is not None:
+            self.__args.processes = int(self.__args.processes)
 
         if os.path.isfile(self.__args.marked) == 0:
             print('Hint file does not exist')
