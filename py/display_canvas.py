@@ -1,7 +1,8 @@
 import tkinter as tk
-
+import numpy as np
 from PIL import Image, ImageTk
-from py.image_colorizer_multiprocess import ImageColorizerMultiprocess
+from image_colorizer_multiprocess import ImageColorizerMultiprocess
+import cv2
 
 
 class DisplayCanvas(tk.Frame):
@@ -19,8 +20,17 @@ class DisplayCanvas(tk.Frame):
                 self._display((i, j), matrices[i][j])
 
     def update_color(self, coordinates, bw, marked):
+        cv2.imshow('', bw)
+        cv2.waitKey(0)
+        cv2.imshow('', marked)
+        cv2.waitKey(0)
+
         colorizer = ImageColorizerMultiprocess(bw, marked)
-        result = colorizer.colorize()
+
+        result = colorizer.colorize() * 255
+
+        result = cv2.cvtColor(result.astype(np.uint8), cv2.COLOR_BGR2RGB)
+
         self._display(coordinates, result)
 
     def _display(self, coordinate, array):

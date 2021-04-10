@@ -55,3 +55,5 @@ class SingletonConfig:
         if os.path.isfile(self.__args.marked) == 0:
             print('Hint file does not exist')
             exit()
+        self.__args.lgmres = 1
+        self.__args.processes = 4

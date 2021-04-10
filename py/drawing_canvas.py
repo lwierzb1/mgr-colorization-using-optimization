@@ -13,9 +13,9 @@ class DrawingCanvas(tk.Frame):
     def __init__(self, master, matrix, xd):
         tk.Frame.__init__(self, master)
         self._image = None
-        self.xd = xd
-        self.__matrix = matrix
+        self.__matrix = None
         self._raw_image = None
+        self.xd = xd
         self._canvas = tk.Canvas(self, height=matrix.shape[0], width=matrix.shape[1], bd=-2)
         self._canvas.pack(fill="both", expand=True)
 
@@ -34,6 +34,8 @@ class DrawingCanvas(tk.Frame):
         self.__update_behaviour.analyze(e)
 
     def draw_dot(self, e):
+        if self.__matrix is None:
+            self.__matrix = self.__get_canvas_data()
         self.__draw_behaviour.draw_dot(e)
         self.__update_behaviour.analyze(e)
 
@@ -47,7 +49,11 @@ class DrawingCanvas(tk.Frame):
         aa = self.__split_array(self.__matrix)
         for coordinate in self.__update_behaviour.canvas_coordinates_to_update:
             image = canvas_arrays[coordinate[0]][coordinate[1]]
-            self.xd.update_color(coordinate, aa[coordinate[0]][coordinate[1]], image)
+            image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
+            b = cv2.cvtColor(aa[coordinate[0]][coordinate[1]], cv2.COLOR_RGB2BGR)
+            cv2.imshow('', image)
+            cv2.waitKey(0)
+            self.xd.update_color(coordinate, b, image)
 
     def __get_canvas_arrays(self):
         array = self.__get_canvas_data()

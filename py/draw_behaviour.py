@@ -4,7 +4,7 @@ from tkinter import *
 class DrawBehaviour:
     def __init__(self, canvas: Canvas):
         self.pen_width = 11
-        self.pen_color = 'black'
+        self.pen_color = 'red'
         self.__canvas = canvas
         self.__old_x = None
         self.__old_y = None
