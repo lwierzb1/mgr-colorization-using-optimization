@@ -31,10 +31,10 @@ class AbstractColorizer(ABC):
     """
 
     def __init__(self, grayscale, marked):
-        bgr_grayscale = read_image(grayscale)
-        bgr_marked = read_image(marked)
-        self._grayscale_matrix = bgr_as_float_matrix(bgr_grayscale)
-        self._marked_matrix = bgr_as_float_matrix(bgr_marked)
+        # bgr_grayscale = read_image(grayscale)
+        # bgr_marked = read_image(marked)
+        self._grayscale_matrix = bgr_as_float_matrix(grayscale)
+        self._marked_matrix = bgr_as_float_matrix(marked)
 
     def colorize(self):
         pass

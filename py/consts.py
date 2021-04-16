@@ -1,0 +1,2 @@
+RGB_BLACK = (0, 0, 0)
+HEX_BLACK = '#000000'

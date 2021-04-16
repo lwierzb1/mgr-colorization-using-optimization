@@ -5,6 +5,7 @@
 import cv2
 import numpy as np
 import color_conv
+from tkinter import filedialog
 
 __author__ = "Lukasz Wierzbicki"
 __version__ = "1.0.0"
@@ -67,3 +68,24 @@ def bgr_matrix_to_image(matrix):
     matrix = np.clip(matrix, 0, 1)
     bgr_image = (matrix * 255).astype(np.uint8)
     return bgr_image
+
+
+def hex_to_bgr(value):
+    hex_val = value.lstrip('#')
+    rgb = list(int(hex_val[i:i + 2], 16) for i in (0, 2, 4))
+    rgb.reverse()
+    return rgb
+
+
+def browse_for_image():
+    filename = filedialog.askopenfilename(initialdir="/",
+                                          title="Select an image",
+                                          filetypes=[("BMP Files", "*.bmp")])
+    if filename:
+        return read_image(filename)
+    else:
+        return None
+
+
+def bgr_to_rgb(matrix):
+    return cv2.cvtColor(matrix, cv2.COLOR_BGR2RGB)

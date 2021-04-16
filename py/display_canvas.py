@@ -1,48 +1,39 @@
 import tkinter as tk
+
+import cv2
 import numpy as np
 from PIL import Image, ImageTk
+
 from image_colorizer_multiprocess import ImageColorizerMultiprocess
-import cv2
+from image_processing_toolkit import read_image
 
 
 class DisplayCanvas(tk.Frame):
-    def __init__(self, master, matrices):
-        tk.Frame.__init__(self, master, height=960, width=720)
-        self.pack()
+    def __init__(self, master):
+        tk.Frame.__init__(self, master)
+        self._raw_image = None
+        self._image = None
 
-        self._raw_images = dict()
-        self._images = dict()
-        self._canvases = dict()
-        self.__init_dictionaries(matrices)
+        self.__show_default_image()
 
-        for i in range(len(matrices)):
-            for j in range(len(matrices[i])):
-                self._display((i, j), matrices[i][j])
-
-    def update_color(self, coordinates, bw, marked):
-        cv2.imshow('', bw)
-        cv2.waitKey(0)
-        cv2.imshow('', marked)
-        cv2.waitKey(0)
-
+    def update_color(self, bw, marked):
         colorizer = ImageColorizerMultiprocess(bw, marked)
-
         result = colorizer.colorize() * 255
-
         result = cv2.cvtColor(result.astype(np.uint8), cv2.COLOR_BGR2RGB)
+        self.display(result)
 
-        self._display(coordinates, result)
+    def __init_canvas(self, input_matrix):
+        self._image = None
+        self._raw_image = None
+        self._canvas = tk.Canvas(self, height=input_matrix.shape[0], width=input_matrix.shape[1])
+        self._canvas.pack()
 
-    def _display(self, coordinate, array):
-        self._raw_images[coordinate] = ImageTk.PhotoImage(image=Image.fromarray(array))
-        self._images[coordinate] = self._canvases[coordinate].create_image(0, 0, image=self._raw_images[coordinate],
-                                                                           anchor="nw")
-        self._canvases[coordinate].grid(row=coordinate[1], column=coordinate[0])
+    def display(self, array):
+        self._raw_image = ImageTk.PhotoImage(image=Image.fromarray(array))
+        self._image = self._canvas.create_image(0, 0, image=self._raw_image, anchor="nw")
+        self._canvas.pack()
 
-    def __init_dictionaries(self, matrices):
-        for c in range(len(matrices)):
-            for r in range(len(matrices[c])):
-                self._canvases[(c, r)] = tk.Canvas(self,
-                                                   bd=-2,
-                                                   height=matrices[c][r].shape[0],
-                                                   width=matrices[c][r].shape[1])
+    def __show_default_image(self):
+        matrix = read_image('../assets/info_load.bmp')
+        self.__init_canvas(matrix)
+        self.display(matrix)
