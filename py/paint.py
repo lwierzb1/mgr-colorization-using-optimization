@@ -4,6 +4,8 @@ from display_canvas import DisplayCanvas
 from py.drawing_canvas import DrawingCanvas
 from image_colorizer_multiprocess import ImageColorizerMultiprocess
 from image_processing_toolkit import bgr_matrix_to_image, bgr_to_rgb
+import cv2
+from update_grid import UpdateGrid
 
 
 def init_ui(root_node):

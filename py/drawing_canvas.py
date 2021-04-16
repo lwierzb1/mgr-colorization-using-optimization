@@ -1,12 +1,13 @@
 import tkinter as tk
 
+import cv2
 from PIL import Image, ImageTk
 
 from draw_behaviour import DrawBehaviour
 from image_processing_toolkit import browse_for_image, bgr_to_rgb, read_image
 from pencil_config import PencilConfig
 from pencil_config_observer import PencilConfigObserver
-from resizing_canvas import ResizingCanvas
+from py.image_colorizer import ImageColorizer
 from update_behaviour import UpdateBehaviour
 
 
@@ -35,14 +36,25 @@ class DrawingCanvas(tk.LabelFrame):
 
     def on_mouse_motion(self, e):
         self.__draw_behaviour.draw(e)
-        # self.__update_behaviour.analyze(e)
+        self.__update_behaviour.on_motion(e)
 
     def on_mouse_click(self, e):
         self.__draw_behaviour.draw_dot(e)
-        # self.__update_behaviour.analyze(e)
+        self.__update_behaviour.on_click(e)
 
     def on_mouse_release(self, e):
         self.__draw_behaviour.on_release(e)
+
+        bw, color = self.get_colorization_input()
+        # aa = UpdateBehaviour(bw)
+        # bb = UpdateBehaviour(color)
+        #
+        # cc = ImageColorizer(aa.on_click(e), bb.on_click(e))
+        # r = cc.colorize()
+        r = self.__update_behaviour.perform(bw, color)
+
+        cv2.imshow('', r)
+        cv2.waitKey(0)
 
     def get_colorization_input(self):
         return self.__matrix, self.__get_scribbles_matrix()
@@ -65,8 +77,8 @@ class DrawingCanvas(tk.LabelFrame):
         self._pencil_config.add_observer(self._pencil_config_observer)
         self._pencil_config.pack(side=tk.LEFT, padx=20)
 
-    def __init_update_behaviour(self, matrix):
-        self.__update_behaviour = UpdateBehaviour(matrix.shape[1], matrix.shape[0])
+    def __init_update_behaviour(self):
+        self.__update_behaviour = UpdateBehaviour(self.__matrix)
 
     def __init_draw_behaviour(self):
         self.__draw_behaviour = DrawBehaviour(self._canvas, self._pencil_config_observer)
@@ -85,11 +97,13 @@ class DrawingCanvas(tk.LabelFrame):
             self.__init_bw_matrix(image)
             self.__init_pencil_config()
             self.__init_draw_behaviour()
+            self.__init_update_behaviour()
             self.__bind_mouse_events()
             self.display(bgr_to_rgb(self.__matrix))
 
     def __init_bw_matrix(self, matrix):
         self.__matrix = matrix
+        self.__color_matrix = matrix.copy()
 
     def __show_default_image(self):
         matrix = read_image('../assets/info_load.bmp')
