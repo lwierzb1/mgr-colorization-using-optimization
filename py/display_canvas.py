@@ -6,14 +6,15 @@ from PIL import Image, ImageTk
 
 from image_colorizer_multiprocess import ImageColorizerMultiprocess
 from image_processing_toolkit import read_image
+from py.observer import Observer
 
 
-class DisplayCanvas(tk.Frame):
+class DisplayCanvas(tk.Frame, Observer):
     def __init__(self, master):
         tk.Frame.__init__(self, master)
         self._raw_image = None
         self._image = None
-
+        self._image_array = None
         self.__show_default_image()
 
     def update_color(self, bw, marked):
@@ -29,11 +30,25 @@ class DisplayCanvas(tk.Frame):
         self._canvas.pack()
 
     def display(self, array):
+        self._image_array = array
         self._raw_image = ImageTk.PhotoImage(image=Image.fromarray(array))
         self._image = self._canvas.create_image(0, 0, image=self._raw_image, anchor="nw")
         self._canvas.pack()
 
     def __show_default_image(self):
-        matrix = read_image('../assets/info_load.bmp')
+        matrix = read_image('../assets/info_idle.bmp')
         self.__init_canvas(matrix)
         self.display(matrix)
+
+    def update_subject(self, **kwargs):
+        x_start = kwargs.get('x_start')
+        y_start = kwargs.get('y_start')
+        result = kwargs.get('result')
+        height = result.shape[0]
+        width = result.shape[1]
+        array = self._image_array.copy()
+        array[y_start:y_start + height, x_start:x_start + width] = result
+        self.display(array)
+
+    def get_result(self):
+        return self._image_array

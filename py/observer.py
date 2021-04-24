@@ -3,5 +3,5 @@ from abc import ABC, abstractmethod
 
 class Observer(ABC):
     @abstractmethod
-    def update(self, **kwargs):
+    def update_subject(self, **kwargs):
         pass

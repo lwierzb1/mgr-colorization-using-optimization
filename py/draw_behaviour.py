@@ -2,12 +2,12 @@ from tkinter import *
 
 from pencil_config_observer import PencilConfigObserver
 from line_drawing_command import LineDrawingCommand
+from pencil_config_subject import PencilConfigSubject
 
 
 class DrawBehaviour:
-    def __init__(self, canvas: Canvas, pencil_config_observer: PencilConfigObserver):
-        self._pencil_config_observer = pencil_config_observer
-
+    def __init__(self, canvas: Canvas, pencil_config_subject: PencilConfigSubject):
+        self.__init_pencil_config_observer(pencil_config_subject)
         self.__canvas = canvas
         self.__old_x = None
         self.__old_y = None
@@ -75,3 +75,7 @@ class DrawBehaviour:
     def __undo_command(self, command):
         command.undo()
         self._undo_commands.append(command)
+
+    def __init_pencil_config_observer(self, pencil_config_subject):
+        self._pencil_config_observer = PencilConfigObserver()
+        pencil_config_subject.attach(self._pencil_config_observer)

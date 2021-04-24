@@ -1,14 +1,14 @@
 import tkinter as tk
 
-import cv2
 from PIL import Image, ImageTk
 
 from draw_behaviour import DrawBehaviour
-from image_processing_toolkit import browse_for_image, bgr_to_rgb, read_image
+from image_processing_toolkit import browse_for_image, bgr_to_rgb, read_image, bgr_matrix_to_image
 from pencil_config import PencilConfig
 from pencil_config_observer import PencilConfigObserver
-from py.image_colorizer import ImageColorizer
+from py.colorized_image_subject import ColorizedImageSubject
 from update_behaviour import UpdateBehaviour
+from gui_toolkit import create_info_window
 
 
 class DrawingCanvas(tk.LabelFrame):
@@ -21,6 +21,10 @@ class DrawingCanvas(tk.LabelFrame):
         self.grid_rowconfigure(0, weight=1)
         self.__show_default_image()
         self.__bind_mouse_events_for_load_image()
+        self.__init_colorized_image_subject()
+
+    def add_observer(self, observer):
+        self.__colorized_image_subject.attach(observer)
 
     def display(self, matrix):
         self._raw_image = ImageTk.PhotoImage(image=Image.fromarray(matrix))
@@ -44,19 +48,18 @@ class DrawingCanvas(tk.LabelFrame):
 
     def on_mouse_release(self, e):
         self.__draw_behaviour.on_release(e)
+        self.__colorize()
 
-        bw, color = self.get_colorization_input()
-        # aa = UpdateBehaviour(bw)
-        # bb = UpdateBehaviour(color)
-        #
-        # cc = ImageColorizer(aa.on_click(e), bb.on_click(e))
-        # r = cc.colorize()
-        r = self.__update_behaviour.perform(bw, color)
+    def __colorize(self):
+        window = create_info_window("Performing colorization. Please wait...")
+        bw, color = self.__get_colorization_input()
+        x, y, result = self.__update_behaviour.perform_colorize(bw, color)
+        result = bgr_matrix_to_image(result)
+        result = bgr_to_rgb(result)
+        self.__colorized_image_subject.notify(x_start=x, y_start=y, result=result)
+        window.destroy()
 
-        cv2.imshow('', r)
-        cv2.waitKey(0)
-
-    def get_colorization_input(self):
+    def __get_colorization_input(self):
         return self.__matrix, self.__get_scribbles_matrix()
 
     def __get_scribbles_matrix(self):
@@ -74,14 +77,14 @@ class DrawingCanvas(tk.LabelFrame):
     def __init_pencil_config(self):
         self._pencil_config_observer = PencilConfigObserver()
         self._pencil_config = PencilConfig(self)
-        self._pencil_config.add_observer(self._pencil_config_observer)
+        self._pencil_config.pencil_config_subject.attach(self._pencil_config_observer)
         self._pencil_config.pack(side=tk.LEFT, padx=20)
 
     def __init_update_behaviour(self):
-        self.__update_behaviour = UpdateBehaviour(self.__matrix)
+        self.__update_behaviour = UpdateBehaviour(self.__matrix, self._pencil_config.pencil_config_subject)
 
     def __init_draw_behaviour(self):
-        self.__draw_behaviour = DrawBehaviour(self._canvas, self._pencil_config_observer)
+        self.__draw_behaviour = DrawBehaviour(self._canvas, self._pencil_config.pencil_config_subject)
 
     def __bind_mouse_events(self):
         self._canvas.bind('<B1-Motion>', self.on_mouse_motion)
@@ -100,6 +103,7 @@ class DrawingCanvas(tk.LabelFrame):
             self.__init_update_behaviour()
             self.__bind_mouse_events()
             self.display(bgr_to_rgb(self.__matrix))
+            self.__push_bw_image()
 
     def __init_bw_matrix(self, matrix):
         self.__matrix = matrix
@@ -110,3 +114,10 @@ class DrawingCanvas(tk.LabelFrame):
         self.__init_canvas(matrix)
         self.__init_bw_matrix(matrix)
         self.display(matrix)
+
+    def __init_colorized_image_subject(self):
+        self.__colorized_image_subject = ColorizedImageSubject()
+
+    def __push_bw_image(self):
+        result = bgr_to_rgb(self.__matrix)
+        self.__colorized_image_subject.notify(x_start=0, y_start=0, result=result)

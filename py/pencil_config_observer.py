@@ -9,7 +9,7 @@ class PencilConfigObserver(Observer):
         self.rgb = consts.RGB_BLACK
         self.width = 1
 
-    def update(self, **kwargs):
+    def update_subject(self, **kwargs):
         width_value = kwargs.get('width')
         hex_value = kwargs.get('hex')
         rgb_value = kwargs.get('rgb')

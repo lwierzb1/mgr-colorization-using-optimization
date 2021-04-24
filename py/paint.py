@@ -1,23 +1,29 @@
 import tkinter as tk
+from tkinter import messagebox
 
 from display_canvas import DisplayCanvas
-from py.drawing_canvas import DrawingCanvas
-from image_colorizer_multiprocess import ImageColorizerMultiprocess
-from image_processing_toolkit import bgr_matrix_to_image, bgr_to_rgb
-import cv2
-from update_grid import UpdateGrid
+from drawing_canvas import DrawingCanvas
+from image_processing_toolkit import bgr_to_rgb, write_image
 
 
 def init_ui(root_node):
     drawing = init_drawing_canvas(root_node)
     display = init_display_canvas(root_node)
+    drawing.add_observer(display)
     init_buttons(root_node, drawing, display)
 
 
 def init_buttons(root_node, drawing_canvas, display_canvas):
-    colorize_button = tk.Button(root_node, text="Colorize",
-                                command=lambda: perform_colorize(drawing_canvas, display_canvas))
+    colorize_button = tk.Button(root_node, text="Save result",
+                                command=lambda: save_result(display_canvas))
     colorize_button.grid(row=1, column=2)
+
+
+def save_result(display_canvas: DisplayCanvas):
+    bgr_matrix = display_canvas.get_result()
+    rgb_image = bgr_to_rgb(bgr_matrix)
+    write_image(rgb_image, 'result.bmp')
+    messagebox.showinfo("Colorization Using Optimization", "Result image saved as 'result.bmp' in working directory.")
 
 
 def init_drawing_canvas(root_node):
@@ -34,18 +40,10 @@ def init_display_canvas(root_node):
     return display
 
 
-def perform_colorize(drawing: DrawingCanvas, display: DisplayCanvas):
-    bw, scribbles = drawing.get_colorization_input()
-    colorizer = ImageColorizerMultiprocess(bw, scribbles)
-    colorized_matrix = colorizer.colorize()
-    colorized_bgr_image = bgr_matrix_to_image(colorized_matrix)
-    colorized_rgb_image = bgr_to_rgb(colorized_bgr_image)
-    display.display(colorized_rgb_image)
-
-
 if __name__ == '__main__':
     root = tk.Tk()
     root.state('zoomed')
+    root.title('Colorization Using Optimization')
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
 
@@ -53,7 +51,6 @@ if __name__ == '__main__':
     root.grid_columnconfigure(1, weight=1)
     root.grid_rowconfigure(0, weight=1)
 
-    # y = cv2.resize(y, (100, 100))
     init_ui(root)
 
     root.mainloop()
