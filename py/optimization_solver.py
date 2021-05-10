@@ -34,17 +34,17 @@ class OptimizationSolver:
 
     def optimize(self, u_channel, v_channel):
         config = SingletonConfig.get_instance()
-        jacobi_approximation = config.get_args().jacobi
-        lgmres = config.get_args().lgmres
+        jacobi_approximation = config.jacobi_approximation
+        lin_alg = config.linear_algorithm
 
-        if jacobi_approximation is not None:
+        if lin_alg == 'jacobi':
             print('using jacobi', jacobi_approximation)
             # U space solving
             new_u = self.__compute_new_color_channel_jacobi(u_channel, jacobi_approximation)
             # V space solving
             new_v = self.__compute_new_color_channel_jacobi(v_channel, jacobi_approximation)
             return new_u, new_v
-        elif lgmres is not None:
+        elif lin_alg == 'lgmres':
             print('using lgmres')
             # U space solving
             new_u = self.__compute_new_color_channel_lgmres(u_channel)

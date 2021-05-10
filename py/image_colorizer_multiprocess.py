@@ -38,7 +38,7 @@ class ImageColorizerMultiprocess(AbstractColorizer):
         super().__init__(grayscale, marked)
         config = SingletonConfig.get_instance()
 
-        self.__SPLIT_FACTOR = config.get_args().processes
+        self.__SPLIT_FACTOR = config.processes
         self.__colorization_solvers = self.__initialize_colorization_solvers()
 
     def colorize(self):

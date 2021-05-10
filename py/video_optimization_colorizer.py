@@ -8,27 +8,40 @@ from py.image_colorizer_multiprocess import ImageColorizerMultiprocess
 from py.image_processing_toolkit import bgr_matrix_to_image
 
 
-class VideoColorizer:
-    def __init__(self):
+class VideoOptimizationColorizer:
+    def __init__(self, video_path):
+        self.video_ended = False
         self._out = None
+        self._cap = None
         self._current_frame = None
         self._previous_frame = None
         self._features_to_track = None
         self._marked_frame = None
         self._processed_frames = 0
-        self._frames_to_process = 30
+        self._frames_to_process = 10
+        self._video_path = video_path
+        self.get_frame_to_colorize()
 
-    def colorize_video(self, video_path, m):
-        self.__read_video(video_path)
-        self.__init_out()
-        self.__read_next_video_frame()
+    def colorize_video(self, m):
+        if self.video_ended:
+            return
+
         self.__find_features_to_track()
-
         # drawing on frame like on canvas .... start
         self._marked_frame = cv2.imread(m)
         # drawing on frame like on canvas .... stop
         self.__continuous_colorization()
+        self._processed_frames = 0
+
+        # if self.video_ended:
         self._out.release()
+
+    def get_frame_to_colorize(self):
+        if not self.__is_video_opened():
+            self.__read_video(self._video_path)
+            self.__init_out()
+            self.__read_next_video_frame()
+        return self._current_frame
 
     def __continuous_colorization(self):
         marked_pixels_new = []
@@ -47,7 +60,7 @@ class VideoColorizer:
             else:
                 marked_pixels_current = self.__get_marked_pixels()
 
-            getTransform = {tuple(p0): p1 - p0 for p0, p1 in (zip(list(good_old_points), list(good_new_points)))}
+            points = {tuple(p0): p1 - p0 for p0, p1 in (zip(list(good_old_points), list(good_new_points)))}
 
             for index, pixel in enumerate(marked_pixels_current):
                 min_distance = sys.maxsize
@@ -59,7 +72,7 @@ class VideoColorizer:
                         min_distance = current_distance
                         min_distance_point = point
 
-                v0 = getTransform[tuple(min_distance_point)]
+                v0 = points[tuple(min_distance_point)]
                 v0 = np.array([v0[1], v0[0]])
                 marked_pixels_new.append((pixel + v0, color_point))
 
@@ -70,6 +83,8 @@ class VideoColorizer:
                     current_colored_frame[int(pixel[0]), int(pixel[1])] = color.tolist()
 
             colorized_frame = self.__colorize_frame(current_colored_frame)
+            cv2.imshow('', colorized_frame)
+            cv2.waitKey(0)
             self.__append_frame_to_video(colorized_frame)
 
             self._marked_frame = current_colored_frame
@@ -106,6 +121,7 @@ class VideoColorizer:
         self.__shift_last_frame()
         ret, frame = self._cap.read()
         self._current_frame = frame
+        self.video_ended = not ret
         return ret
 
     def __shift_last_frame(self):

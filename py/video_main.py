@@ -1,8 +1,8 @@
-from py.video_colorizer import VideoColorizer
+from py.video_optimization_colorizer import VideoOptimizationColorizer
 
 
 def main():
-    v = VideoColorizer('../test/1.avi')
+    v = VideoOptimizationColorizer('../test/1.avi')
 
 
 if __name__ == "__main__":

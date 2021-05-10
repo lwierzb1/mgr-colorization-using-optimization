@@ -4,7 +4,6 @@
 
 import numpy as np
 import scipy.sparse as sc
-import scipy.sparse.linalg as linalg
 from numba import jit
 
 __author__ = "Lukasz Wierzbicki"

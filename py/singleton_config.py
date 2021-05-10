@@ -1,5 +1,4 @@
-import argparse
-import os
+import configparser
 
 
 class SingletonConfig:
@@ -19,41 +18,31 @@ class SingletonConfig:
             raise Exception("This class is a singleton!")
         else:
             SingletonConfig.__instance = self
-            self._parse_args()
+            self._parse_config()
 
-    def get_args(self):
-        return self.__args
+    def _parse_config(self):
+        config = configparser.ConfigParser()
+        config.read('config.ini')
+        self.mode = config.get('colorizer', 'mode')
+        self.linear_algorithm = config.get('colorizer', 'linear_algorithm')
+        self.processes = config.getint('colorizer', 'process_no')
 
-    def _parse_args(self):
-        parser = argparse.ArgumentParser(description='Colorization using optimization')
-        parser.add_argument('--input', help='grayscale image')
-        parser.add_argument('--marked', help='image with colour hints')
-        parser.add_argument('--store', help='path to store result of algorithm')
-        parser.add_argument('--jacobi', help='path to store result of algorithm')
-        parser.add_argument('--lgmres', help='path to store result of algorithm')
-        parser.add_argument('--processes', help='path to store result of algorithm')
-        self.__args = parser.parse_args()
+        if 'jacobi_approximation' in config:
+            self.jacobi_approximation = config.getint('colorizer', 'jacobi_approximation')
+        else:
+            self.jacobi_approximation = None
 
-        if self.__args.input is None:
-            print('Please give the input greyscale image name.')
+        if self.mode is None:
+            print("Please set 'mode' in .ini file ('video'|'image')")
             exit()
 
-        if os.path.isfile(self.__args.input) == 0:
-            print('Input file does not exist')
+        if self.linear_algorithm is None:
+            print("Please set 'linear_algorithm' in .ini file ('lgmres'|'linalg'|'jacobi')")
             exit()
 
-        if self.__args.marked is None:
-            print('Please give the hint image name.')
+        if self.linear_algorithm == 'jacobi' and self.jacobi_approximation is None:
+            print("Please set 'jacobi_approximation' in .ini file")
             exit()
 
-        if self.__args.jacobi is not None:
-            self.__args.jacobi = int(self.__args.jacobi)
-
-        if self.__args.processes is not None:
-            self.__args.processes = int(self.__args.processes)
-
-        if os.path.isfile(self.__args.marked) == 0:
-            print('Hint file does not exist')
-            exit()
-        self.__args.lgmres = 1
-        self.__args.processes = 4
+        if self.processes is None:
+            self.processes = 1

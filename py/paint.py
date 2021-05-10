@@ -4,16 +4,24 @@ from tkinter import messagebox
 from display_canvas import DisplayCanvas
 from drawing_canvas import DrawingCanvas
 from image_processing_toolkit import bgr_to_rgb, write_image
+from singleton_config import SingletonConfig
 
 
 def init_ui(root_node):
-    drawing = init_drawing_canvas(root_node)
-    display = init_display_canvas(root_node)
-    drawing.add_observer(display)
-    init_buttons(root_node, drawing, display)
+    mode = SingletonConfig.get_instance().mode
+    if mode == 'image':
+        drawing = init_drawing_canvas_for_image(root_node)
+        display = init_display_canvas_for_image(root_node)
+        drawing.add_observer(display)
+        init_buttons_for_image(root_node, drawing, display)
+    else:
+        drawing = init_drawing_canvas_for_video(root_node)
+        display = init_display_canvas_for_video(root_node)
+        drawing.add_observer(display)
+        init_buttons_for_video(root_node, drawing, display)
 
 
-def init_buttons(root_node, drawing_canvas, display_canvas):
+def init_buttons_for_image(root_node, drawing_canvas, display_canvas):
     colorize_button = tk.Button(root_node, text="Save result",
                                 command=lambda: save_result(display_canvas))
     colorize_button.grid(row=1, column=2)
@@ -26,7 +34,7 @@ def save_result(display_canvas: DisplayCanvas):
     messagebox.showinfo("Colorization Using Optimization", "Result image saved as 'result.bmp' in working directory.")
 
 
-def init_drawing_canvas(root_node):
+def init_drawing_canvas_for_image(root_node):
     drawing = DrawingCanvas(root_node)
     drawing.grid(row=0, column=0)
     root_node.bind('<Control-z>', drawing.undo_last_command)
@@ -34,10 +42,22 @@ def init_drawing_canvas(root_node):
     return drawing
 
 
-def init_display_canvas(root_node):
+def init_display_canvas_for_image(root_node):
     display = DisplayCanvas(root_node)
     display.grid(row=0, column=1)
     return display
+
+
+def init_drawing_canvas_for_video(root_node):
+    pass
+
+
+def init_display_canvas_for_video(root_node):
+    pass
+
+
+def init_buttons_for_video(a, b, c):
+    pass
 
 
 if __name__ == '__main__':
