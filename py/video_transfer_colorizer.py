@@ -1,17 +1,18 @@
 import cv2
 
-from py.image_processing_toolkit import bgr_matrix_to_image
 from py.color_transfer import ColorTransfer
+from py.image_processing_toolkit import bgr_to_rgb
 
 
 class VideoTransferColorizer:
-    def __init__(self, video_path):
+    def __init__(self, colorized_image_subject, video_path):
         self.video_ended = False
         self._out = None
         self._current_frame = None
         self._marked_frame = None
         self._processed_frames = 0
         self._video_path = video_path
+        self._colorized_image_subject = colorized_image_subject
         self._color_transfer = ColorTransfer()
 
     def colorize_video(self, example):
@@ -21,15 +22,25 @@ class VideoTransferColorizer:
             return
 
         # drawing on frame like on canvas .... start
-        self._marked_frame = cv2.imread(example)
+        self._marked_frame = example
         # drawing on frame like on canvas .... stop
         self.__continuous_colorization()
         if self.video_ended:
             self._out.release()
 
+    def force_save(self):
+        self._out.release()
+
+    def get_first_frame(self):
+        cap = cv2.VideoCapture(self._video_path)
+        ret, frame = cap.read()
+        cap.release()
+        return frame
+
     def __continuous_colorization(self):
         while self.__read_next_video_frame():
             result = self.__colorize_frame()
+            self._colorized_image_subject.notify(fill=True, result=bgr_to_rgb(result))
             # self._marked_frame = result
             self.__append_frame_to_video(result)
 

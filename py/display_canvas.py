@@ -12,6 +12,7 @@ from py.observer import Observer
 class DisplayCanvas(tk.LabelFrame, Observer):
     def __init__(self, master):
         tk.LabelFrame.__init__(self, master)
+        self.config(text='RESULT')
         self._raw_image = None
         self._image = None
         self._image_array = None

@@ -8,7 +8,10 @@ from image_processing_toolkit import bgr_to_rgb, read_image, bgr_matrix_to_image
 from pencil_config import PencilConfig
 from pencil_config_observer import PencilConfigObserver
 from py.colorized_image_subject import ColorizedImageSubject
+from py.image_colorizer_multiprocess import ImageColorizerMultiprocess
+from py.singleton_config import SingletonConfig
 from py.video_optimization_colorizer import VideoOptimizationColorizer
+from py.video_transfer_colorizer import VideoTransferColorizer
 from update_behaviour import UpdateBehaviour
 
 
@@ -34,13 +37,22 @@ class VideoDrawingCanvas(tk.LabelFrame):
 
     def go_next(self):
         window = create_info_window("Performing colorization. Please wait...")
-        color = self.__get_scribbles_matrix()
-        self._video_colorizer.colorize_video(color)
-        first_frame = self._video_colorizer.get_frame_to_colorize()
+        colorization_algorithm = SingletonConfig.get_instance().colorization_algorithm
+        if colorization_algorithm == 'CUO':
+            color = self.__get_scribbles_matrix()
+            self._video_colorizer.colorize_video(color)
+            first_frame = self._video_colorizer.get_frame_to_colorize()
 
-        self.__init_bw_matrix(first_frame)
-        self.display(bgr_to_rgb(self.__matrix))
-        self.__push_bw_image()
+            self.__init_bw_matrix(first_frame)
+            self.display(bgr_to_rgb(self.__matrix))
+            self.__push_bw_image()
+        else:
+            bw, color = self.__get_colorization_input()
+            colorizer = ImageColorizerMultiprocess(bw, color)
+            result = colorizer.colorize()
+            result = bgr_matrix_to_image(result)
+            self._video_colorizer.colorize_video(result)
+
         window.destroy()
 
     def display(self, matrix):
@@ -65,12 +77,17 @@ class VideoDrawingCanvas(tk.LabelFrame):
 
     def on_mouse_release(self, e):
         self.__draw_behaviour.on_release(e)
-        # self.__colorize()
+        colorization_algorithm = SingletonConfig.get_instance().colorization_algorithm
+        if colorization_algorithm == 'CT':
+            self.__colorize()
 
     def __colorize(self):
         window = create_info_window("Performing colorization. Please wait...")
         bw, color = self.__get_colorization_input()
-        color = bgr_matrix_to_image(color)
+        x, y, result = self.__update_behaviour.perform_colorize(bw, color)
+        result = bgr_matrix_to_image(result)
+        result = bgr_to_rgb(result)
+        self.__colorized_image_subject.notify(x_start=x, y_start=y, result=result)
         window.destroy()
 
     def __get_colorization_input(self):
@@ -111,8 +128,14 @@ class VideoDrawingCanvas(tk.LabelFrame):
     def __load_image(self, e):
         video_filename = browse_for_video()
         if video_filename is not None:
-            self._video_colorizer = VideoOptimizationColorizer(self.__colorized_image_subject, video_filename)
-            first_frame = self._video_colorizer.get_frame_to_colorize()
+            colorization_algorithm = SingletonConfig.get_instance().colorization_algorithm
+
+            if colorization_algorithm == 'CUO':
+                self._video_colorizer = VideoOptimizationColorizer(self.__colorized_image_subject, video_filename)
+                first_frame = self._video_colorizer.get_frame_to_colorize()
+            else:
+                self._video_colorizer = VideoTransferColorizer(self.__colorized_image_subject, video_filename)
+                first_frame = self._video_colorizer.get_first_frame()
 
             self.__init_bw_matrix(first_frame)
             self.__init_pencil_config()
@@ -137,4 +160,4 @@ class VideoDrawingCanvas(tk.LabelFrame):
 
     def __push_bw_image(self):
         result = bgr_to_rgb(self.__matrix)
-        self.__colorized_image_subject.notify(result=result)
+        self.__colorized_image_subject.notify(fill=True, result=result)

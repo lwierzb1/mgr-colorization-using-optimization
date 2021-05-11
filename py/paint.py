@@ -95,7 +95,11 @@ def init_drawing_canvas_for_video(root_node):
 
 
 def init_display_canvas_for_video(root_node):
-    display = VideoDisplayCanvas(root_node)
+    colorization_algorithm = SingletonConfig.get_instance().colorization_algorithm
+    if colorization_algorithm == 'CUO':
+        display = VideoDisplayCanvas(root_node)
+    else:
+        display = DisplayCanvas(root_node)
     display.grid(row=0, column=1)
     return display
 

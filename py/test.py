@@ -65,15 +65,15 @@ def colorlist_populate(count, color_list, color_list_new):
 
 
 if __name__ == '__main__':
-    grey_name = "D:/studia/mgr/sources/mgr-colorization-using-optimization/test/video/cut.avi "  # BW video
+    grey_name = "D:/studia/mgr/sources/mgr-colorization-using-optimization/test/video/toddler-gray.gif "  # BW video
     marked_name = "D:/studia/mgr/sources/mgr-colorization-using-optimization/test/video/first1.bmp"  # BW image with color markings. Only use BMP
     marked_name2 = "D:/studia/mgr/sources/mgr-colorization-using-optimization/test/video/result.bmp"  # BW image with color markings. Only use BMP
     color_name = "C:/Users/Lukasz/Downloads/OMCS6475_FinalProject-master/toddlermarked"  # Specify the file name of the final colorized image. LEAVE OUT FILE EXTENSION
-    v = VideoOptimizationColorizer(grey_name)
-    v.colorize_video(marked_name)
+    # v = VideoOptimizationColorizer(grey_name)
+    # v.colorize_video(marked_name)
 
-    # v = VideoTransferColorizer(grey_name)
-    # v.colorize_video(marked_name2)
+    v = VideoTransferColorizer(grey_name)
+    v.colorize_video(marked_name2)
 
     # grey_name = "bizbw.mp4"  # BW video
     # marked_name = "bizmarked00.bmp"  # BW image with color markings. Only use BMP

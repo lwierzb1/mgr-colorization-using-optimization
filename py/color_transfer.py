@@ -13,8 +13,8 @@ class ColorTransfer:
 
     def transfer(self, colored, gray):
         self._colored = colored
-        factor_row = 5
-        factor_col = 5
+        factor_row = 2
+        factor_col = 2
         self._colored = cv2.resize(self._colored,
                                    (factor_row * self._colored.shape[0], factor_col * self._colored.shape[1]))
         self._colored = cv2.cvtColor(self._colored, cv2.COLOR_BGR2Lab)

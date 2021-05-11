@@ -26,6 +26,7 @@ class SingletonConfig:
         self.mode = config.get('colorizer', 'mode')
         self.linear_algorithm = config.get('colorizer', 'linear_algorithm')
         self.processes = config.getint('colorizer', 'process_no')
+        self.colorization_algorithm = config.get('colorizer', 'colorization_algorithm')
 
         if 'jacobi_approximation' in config:
             self.jacobi_approximation = config.getint('colorizer', 'jacobi_approximation')
@@ -39,6 +40,10 @@ class SingletonConfig:
 
         if self.mode is None:
             print("Please set 'mode' in .ini file ('video'|'image')")
+            exit()
+
+        if self.colorization_algorithm is None:
+            print("Please set 'colorization_algorithm' in .ini file ('CUO'|'CT')")
             exit()
 
         if self.linear_algorithm is None:
