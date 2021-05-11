@@ -32,12 +32,17 @@ class SingletonConfig:
         else:
             self.jacobi_approximation = None
 
+        if 'max_video_frames_per_section' in config:
+            self.max_video_frames_per_section = config.getint('colorizer', 'max_video_frames_per_section')
+        else:
+            self.max_video_frames_per_section = 10
+
         if self.mode is None:
             print("Please set 'mode' in .ini file ('video'|'image')")
             exit()
 
         if self.linear_algorithm is None:
-            print("Please set 'linear_algorithm' in .ini file ('lgmres'|'linalg'|'jacobi')")
+            print("Please set 'linear_algorithm' in .ini file ('lgmres'|'spsolve'|'jacobi')")
             exit()
 
         if self.linear_algorithm == 'jacobi' and self.jacobi_approximation is None:

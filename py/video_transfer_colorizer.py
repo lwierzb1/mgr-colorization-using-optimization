@@ -1,7 +1,7 @@
 import cv2
 
 from py.image_processing_toolkit import bgr_matrix_to_image
-from py.test2 import ColorTransfer
+from py.color_transfer import ColorTransfer
 
 
 class VideoTransferColorizer:

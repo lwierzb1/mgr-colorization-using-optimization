@@ -87,5 +87,15 @@ def browse_for_image():
         return None
 
 
+def browse_for_video():
+    filename = filedialog.askopenfilename(initialdir="/",
+                                          title="Select an video",
+                                          filetypes=[("AVI Files", "*.avi")])
+    if filename:
+        return filename
+    else:
+        return None
+
+
 def bgr_to_rgb(matrix):
     return cv2.cvtColor(matrix, cv2.COLOR_BGR2RGB)

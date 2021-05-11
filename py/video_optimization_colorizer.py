@@ -5,11 +5,13 @@ import cv2
 import numpy as np
 
 from py.image_colorizer_multiprocess import ImageColorizerMultiprocess
-from py.image_processing_toolkit import bgr_matrix_to_image
+from py.image_processing_toolkit import bgr_matrix_to_image, bgr_to_rgb
+from py.singleton_config import SingletonConfig
 
 
 class VideoOptimizationColorizer:
-    def __init__(self, video_path):
+    def __init__(self, colorized_image_subject, video_path):
+        config = SingletonConfig.get_instance()
         self.video_ended = False
         self._out = None
         self._cap = None
@@ -18,8 +20,9 @@ class VideoOptimizationColorizer:
         self._features_to_track = None
         self._marked_frame = None
         self._processed_frames = 0
-        self._frames_to_process = 10
+        self._frames_to_process = config.max_video_frames_per_section
         self._video_path = video_path
+        self._colorized_image_subject = colorized_image_subject
         self.get_frame_to_colorize()
 
     def colorize_video(self, m):
@@ -28,12 +31,15 @@ class VideoOptimizationColorizer:
 
         self.__find_features_to_track()
         # drawing on frame like on canvas .... start
-        self._marked_frame = cv2.imread(m)
+        self._marked_frame = m
         # drawing on frame like on canvas .... stop
         self.__continuous_colorization()
         self._processed_frames = 0
 
-        # if self.video_ended:
+        if self.video_ended:
+            self._out.release()
+
+    def force_save(self):
         self._out.release()
 
     def get_frame_to_colorize(self):
@@ -83,8 +89,8 @@ class VideoOptimizationColorizer:
                     current_colored_frame[int(pixel[0]), int(pixel[1])] = color.tolist()
 
             colorized_frame = self.__colorize_frame(current_colored_frame)
-            cv2.imshow('', colorized_frame)
-            cv2.waitKey(0)
+
+            self._colorized_image_subject.notify(result=bgr_to_rgb(colorized_frame))
             self.__append_frame_to_video(colorized_frame)
 
             self._marked_frame = current_colored_frame
@@ -161,5 +167,5 @@ class VideoOptimizationColorizer:
         return int(self._cap.get(4)), int(self._cap.get(3))
 
     def __init_out(self):
-        self._out = cv2.VideoWriter('out.avi', cv2.VideoWriter_fourcc(*'DIVX'), 25,
+        self._out = cv2.VideoWriter('result.avi', cv2.VideoWriter_fourcc(*'DIVX'), 25,
                                     (self.__get_frame_shape()[1], self.__get_frame_shape()[0]))

@@ -3,19 +3,22 @@ import tkinter as tk
 from PIL import Image, ImageTk
 
 from draw_behaviour import DrawBehaviour
-from image_processing_toolkit import browse_for_image, bgr_to_rgb, read_image, bgr_matrix_to_image
+from gui_toolkit import create_info_window
+from image_processing_toolkit import bgr_to_rgb, read_image, bgr_matrix_to_image, browse_for_video
 from pencil_config import PencilConfig
 from pencil_config_observer import PencilConfigObserver
 from py.colorized_image_subject import ColorizedImageSubject
+from py.video_optimization_colorizer import VideoOptimizationColorizer
 from update_behaviour import UpdateBehaviour
-from gui_toolkit import create_info_window
 
 
-class DrawingCanvas(tk.LabelFrame):
+class VideoDrawingCanvas(tk.LabelFrame):
     def __init__(self, master):
         tk.LabelFrame.__init__(self, master)
+        self.config(text='COLORIZATION')
         self._raw_image = None
         self._image = None
+        self._video_colorizer = None
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
@@ -23,8 +26,22 @@ class DrawingCanvas(tk.LabelFrame):
         self.__bind_mouse_events_for_load_image()
         self.__init_colorized_image_subject()
 
+    def force_save_video(self):
+        self._video_colorizer.force_save()
+
     def add_observer(self, observer):
         self.__colorized_image_subject.attach(observer)
+
+    def go_next(self):
+        window = create_info_window("Performing colorization. Please wait...")
+        color = self.__get_scribbles_matrix()
+        self._video_colorizer.colorize_video(color)
+        first_frame = self._video_colorizer.get_frame_to_colorize()
+
+        self.__init_bw_matrix(first_frame)
+        self.display(bgr_to_rgb(self.__matrix))
+        self.__push_bw_image()
+        window.destroy()
 
     def display(self, matrix):
         self._raw_image = ImageTk.PhotoImage(image=Image.fromarray(matrix))
@@ -48,15 +65,12 @@ class DrawingCanvas(tk.LabelFrame):
 
     def on_mouse_release(self, e):
         self.__draw_behaviour.on_release(e)
-        self.__colorize()
+        # self.__colorize()
 
     def __colorize(self):
         window = create_info_window("Performing colorization. Please wait...")
         bw, color = self.__get_colorization_input()
-        x, y, result = self.__update_behaviour.perform_colorize(bw, color)
-        result = bgr_matrix_to_image(result)
-        result = bgr_to_rgb(result)
-        self.__colorized_image_subject.notify(x_start=x, y_start=y, result=result)
+        color = bgr_matrix_to_image(color)
         window.destroy()
 
     def __get_colorization_input(self):
@@ -95,9 +109,12 @@ class DrawingCanvas(tk.LabelFrame):
         self._canvas.bind("<Button-1>", self.__load_image)
 
     def __load_image(self, e):
-        image = browse_for_image()
-        if image is not None:
-            self.__init_bw_matrix(image)
+        video_filename = browse_for_video()
+        if video_filename is not None:
+            self._video_colorizer = VideoOptimizationColorizer(self.__colorized_image_subject, video_filename)
+            first_frame = self._video_colorizer.get_frame_to_colorize()
+
+            self.__init_bw_matrix(first_frame)
             self.__init_pencil_config()
             self.__init_draw_behaviour()
             self.__init_update_behaviour()
@@ -110,7 +127,7 @@ class DrawingCanvas(tk.LabelFrame):
         self.__color_matrix = matrix.copy()
 
     def __show_default_image(self):
-        matrix = read_image('../assets/info_load.bmp')
+        matrix = read_image('../assets/load_video.bmp')
         self.__init_canvas(matrix)
         self.__init_bw_matrix(matrix)
         self.display(matrix)
@@ -120,4 +137,4 @@ class DrawingCanvas(tk.LabelFrame):
 
     def __push_bw_image(self):
         result = bgr_to_rgb(self.__matrix)
-        self.__colorized_image_subject.notify(x_start=0, y_start=0, result=result, fill=True)
+        self.__colorized_image_subject.notify(result=result)

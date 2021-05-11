@@ -63,10 +63,10 @@ class ColorTransfer:
                 x = jitter_samples[min_idx][0]
                 y = jitter_samples[min_idx][1]
 
-                hue = colored[y, x, 1]
-                sat = colored[y, x, 2]
+                a = colored[y, x, 1]
+                b = colored[y, x, 2]
 
-                result[i, j] = [gray[i, j], hue, sat]
+                result[i, j] = [gray[i, j], a, b]
         return result
 
     @staticmethod
