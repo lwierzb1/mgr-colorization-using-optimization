@@ -138,6 +138,5 @@ if __name__ == '__main__':
     root.grid_rowconfigure(0, weight=1)
 
     init_ui(root)
-    root.style.theme_use(themename='default')
 
     root.mainloop()

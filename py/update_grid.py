@@ -86,7 +86,7 @@ class UpdateGrid:
                 return r
 
     def __init_matrix(self, matrix):
-        self.__matrix = matrix
+        self.__matrix = matrix.copy()
 
     def __split_matrix(self):
         x_cells = self.shape[0]
@@ -102,4 +102,4 @@ class UpdateGrid:
         self.pencil_config_observer = PencilConfigObserver()
 
     def __get_pencil_width(self):
-        return int(self.pencil_config_observer.width)
+        return int(float(self.pencil_config_observer.width))

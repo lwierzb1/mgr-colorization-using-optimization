@@ -1,6 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
+
 class PencilWidthPicker(ttk.Frame):
     def __init__(self, master, config_subject, **kw):
         super().__init__(master, **kw)
@@ -14,13 +15,12 @@ class PencilWidthPicker(ttk.Frame):
         self._pencil_config_subject.attach(observer)
 
     def __create_slider(self):
-        self._slider = tk.Scale(self,
-                                from_=self.__MIN_PENCIL_WIDTH,
-                                to=self.__MAX_PENCIL_WIDTH,
-                                orient=tk.HORIZONTAL,
-                                command=self.__update_pencil_width,
-                                length='100px',
-                                label='Pencil width:')
+        self._slider = ttk.Scale(self,
+                                 from_=self.__MIN_PENCIL_WIDTH,
+                                 to=self.__MAX_PENCIL_WIDTH,
+                                 orient=tk.HORIZONTAL,
+                                 command=self.__update_pencil_width,
+                                 length='100px')
         self._slider.pack()
 
     def __create_pencil_width_example_display(self):

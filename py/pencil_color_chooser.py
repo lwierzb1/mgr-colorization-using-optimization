@@ -23,7 +23,7 @@ class PencilColorChooser(ttk.Frame):
         self._color_hex = consts.HEX_BLACK
 
     def __create_color_viewer(self):
-        self.__frame = ttk.Frame(self, width=100, height=100)
+        self.__frame = tk.Frame(self, width=100, height=100, background=self._color_hex)
         self.__frame.place(in_=self, anchor='c', relx=0.5, rely=0.5)
         self.__frame.pack()
         self.__frame.bind("<Button-1>", self.__pick_color)

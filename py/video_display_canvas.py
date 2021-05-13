@@ -1,5 +1,5 @@
 import tkinter as tk
-
+from tkinter import ttk
 import cv2
 import numpy as np
 from PIL import Image, ImageTk
@@ -9,10 +9,9 @@ from image_processing_toolkit import read_image
 from observer import Observer
 
 
-class VideoDisplayCanvas(tk.LabelFrame, Observer):
-    def __init__(self, master):
-        tk.LabelFrame.__init__(self, master)
-        self.config(text='RESULT')
+class VideoDisplayCanvas(ttk.Frame, Observer):
+    def __init__(self, master, **kw):
+        super().__init__(master, **kw)
         self._raw_image = None
         self._image = None
         self._image_array = None

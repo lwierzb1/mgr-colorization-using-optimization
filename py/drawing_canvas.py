@@ -122,5 +122,5 @@ class DrawingCanvas(ttk.Frame):
         self.__colorized_image_subject = ColorizedImageSubject()
 
     def __push_bw_image(self):
-        result = bgr_to_rgb(self.__matrix)
+        result = bgr_to_rgb(self.__matrix.copy())
         self.__colorized_image_subject.notify(x_start=0, y_start=0, result=result, fill=True)

@@ -9,10 +9,9 @@ from image_processing_toolkit import read_image
 from observer import Observer
 
 
-class DisplayCanvas(ttk.LabelFrame, Observer):
+class DisplayCanvas(ttk.Frame, Observer):
     def __init__(self, master, **kw):
         super().__init__(master, **kw)
-        self.config(text='RESULT')
         self._raw_image = None
         self._image = None
         self._image_array = None
@@ -48,8 +47,6 @@ class DisplayCanvas(ttk.LabelFrame, Observer):
         fill = kwargs.get('fill')
         reference = kwargs.get('reference')
 
-
-
         height = result.shape[0]
         width = result.shape[1]
         if fill is True:
@@ -58,17 +55,8 @@ class DisplayCanvas(ttk.LabelFrame, Observer):
             self._canvas.config(width=result.shape[1])
         else:
             array = self._image_array.copy()
-
-            cv2.imshow('ref', reference)
-            cv2.waitKey(0)
-
-            cv2.imshow('result', result)
-            cv2.waitKey(0)
-
-            cv2.imshow('dif', result - reference)
-            cv2.waitKey(0)
-
-            was_colored = abs(result - reference).sum(axis=2) > 10
+            diff = reference - cv2.cvtColor(result, cv2.COLOR_RGB2BGR)
+            was_colored = np.sum(diff, axis=2) > (np.min(diff) * 1.2)
 
             for i in range(was_colored.shape[0]):
                 for j in range(was_colored.shape[1]):

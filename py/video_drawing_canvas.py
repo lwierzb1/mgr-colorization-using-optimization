@@ -15,10 +15,9 @@ from video_transfer_colorizer import VideoTransferColorizer
 from update_behaviour import UpdateBehaviour
 
 
-class VideoDrawingCanvas(ttk.LabelFrame):
+class VideoDrawingCanvas(ttk.Frame):
     def __init__(self, master, **kw):
         super().__init__(master, **kw)
-        self.config(text='COLORIZATION')
         self._raw_image = None
         self._image = None
         self._video_colorizer = None
