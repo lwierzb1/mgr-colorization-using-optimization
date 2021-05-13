@@ -13,8 +13,8 @@ class ColorTransfer:
 
     def transfer(self, colored, gray):
         self._colored = colored
-        factor_row = 2
-        factor_col = 2
+        factor_row = 1
+        factor_col = 1
         self._colored = cv2.resize(self._colored,
                                    (factor_row * self._colored.shape[0], factor_col * self._colored.shape[1]))
         self._colored = cv2.cvtColor(self._colored, cv2.COLOR_BGR2Lab)
@@ -97,8 +97,8 @@ class ColorTransfer:
     @staticmethod
     @jit(nopython=True, fastmath=True, cache=True)
     def _get_jitter_samples(img):
-        samples_in_a_row = 16
-        samples_in_a_col = 16
+        samples_in_a_row = 100
+        samples_in_a_col = 100
 
         block_size_y = math.floor(img.shape[0] / samples_in_a_col)
         block_size_x = math.floor(img.shape[1] / samples_in_a_row)

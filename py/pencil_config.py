@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 from pencil_config_subject import PencilConfigSubject
 
 from pencil_color_chooser import PencilColorChooser
@@ -6,9 +7,9 @@ from pencil_width_picker import PencilWidthPicker
 from observer import Observer
 
 
-class PencilConfig(tk.LabelFrame):
-    def __init__(self, master):
-        tk.LabelFrame.__init__(self, master)
+class PencilConfig(ttk.LabelFrame):
+    def __init__(self, master, **kw):
+        super().__init__(master, **kw)
         self.__create_pencil_config_subject()
         self.__create_pencil_color_chooser()
         self.__create_pencil_width_chooser()

@@ -13,12 +13,20 @@ def _prepare_data_for_colorization(bw_matrix, colored_matrix, sigma=0.33):
     filtered = cv2.bilateralFilter(bw_matrix.copy(), 17, 100, 100)
     edged = cv2.Canny(filtered, lower, upper)
     result = colored_matrix.copy()
+
+    # has_hint = abs(colored_matrix - bw_matrix).sum(2) > 0.001
+    # for y in range(has_hint.shape[0]):
+    #     for x in range(has_hint.shape[1]):
+    #         if has_hint[y, x]:
+    #             result[y, x] = colored_matrix[y, x]
+
     for y in range(edged.shape[0]):
         for x in range(edged.shape[1]):
             if edged[y, x] != 0:
                 if not _check_if_color_is_nearby_row(diff, y, x, 50) and not _check_if_color_is_nearby_col(diff, y, x,
                                                                                                            50):
                     result[y, x] = edged[y, x]
+
     return result
 
 
@@ -66,6 +74,7 @@ class ColorizationPreprocessor:
         sub_bw_gridded_image = bw_gridded.get_sub_array(min_x, min_y, max_x, max_y)
         sub_color_gridded_image = color_gridded.get_sub_array(min_x, min_y, max_x, max_y)
         prepared_color_gridded_image = _prepare_data_for_colorization(sub_bw_gridded_image, sub_color_gridded_image)
+
         return (min_x, min_y, max_x, max_y), (sub_bw_gridded_image, prepared_color_gridded_image)
 
     def __create_grid(self, matrix):

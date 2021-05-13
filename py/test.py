@@ -9,8 +9,9 @@ import sys
 import cv2
 import numpy as np
 
-from py.video_optimization_colorizer import VideoOptimizationColorizer
-from py.video_transfer_colorizer import VideoTransferColorizer
+from color_transfer import ColorTransfer
+from video_optimization_colorizer import VideoOptimizationColorizer
+from video_transfer_colorizer import VideoTransferColorizer
 
 
 def import_images(grey_name, marked_name):
@@ -65,15 +66,22 @@ def colorlist_populate(count, color_list, color_list_new):
 
 
 if __name__ == '__main__':
-    grey_name = "D:/studia/mgr/sources/mgr-colorization-using-optimization/test/video/toddler-gray.gif "  # BW video
-    marked_name = "D:/studia/mgr/sources/mgr-colorization-using-optimization/test/video/first1.bmp"  # BW image with color markings. Only use BMP
+    grey_name = "D:/studia/mgr/sources/mgr-colorization-using-optimization/test/video/output.avi "  # BW video
+    marked_name = "D:/studia/mgr/sources/mgr-colorization-using-optimization/test/video/a.bmp"  # BW image with color markings. Only use BMP
     marked_name2 = "D:/studia/mgr/sources/mgr-colorization-using-optimization/test/video/result.bmp"  # BW image with color markings. Only use BMP
     color_name = "C:/Users/Lukasz/Downloads/OMCS6475_FinalProject-master/toddlermarked"  # Specify the file name of the final colorized image. LEAVE OUT FILE EXTENSION
+
+    a1 = 'D:/studia/mgr/sources/mgr-colorization-using-optimization/test/video/1.png'
+    a2 = 'D:/studia/mgr/sources/mgr-colorization-using-optimization/test/video/2.png'
+
+    # c = ColorTransfer()
+    # c.transfer(cv2.imread(a1), cv2.imread(a2))
+
     # v = VideoOptimizationColorizer(grey_name)
     # v.colorize_video(marked_name)
 
-    v = VideoTransferColorizer(grey_name)
-    v.colorize_video(marked_name2)
+    v = VideoTransferColorizer(None, grey_name)
+    v.colorize_video(cv2.imread(marked_name))
 
     # grey_name = "bizbw.mp4"  # BW video
     # marked_name = "bizmarked00.bmp"  # BW image with color markings. Only use BMP

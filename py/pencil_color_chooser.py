@@ -1,12 +1,13 @@
 import tkinter as tk
+from tkinter import ttk
 from tkinter import colorchooser
 
 import consts
 
 
-class PencilColorChooser(tk.Frame):
-    def __init__(self, master, config_subject):
-        tk.Frame.__init__(self, master=master)
+class PencilColorChooser(ttk.Frame):
+    def __init__(self, master, config_subject, **kw):
+        super().__init__(master, **kw)
         self.__init_colors()
         self.__init_config_subject(config_subject)
         self.__create_color_viewer()
@@ -22,7 +23,7 @@ class PencilColorChooser(tk.Frame):
         self._color_hex = consts.HEX_BLACK
 
     def __create_color_viewer(self):
-        self.__frame = tk.Frame(self, width=100, height=100, background=self._color_hex)
+        self.__frame = ttk.Frame(self, width=100, height=100)
         self.__frame.place(in_=self, anchor='c', relx=0.5, rely=0.5)
         self.__frame.pack()
         self.__frame.bind("<Button-1>", self.__pick_color)

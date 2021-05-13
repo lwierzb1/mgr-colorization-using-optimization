@@ -1,5 +1,5 @@
 import tkinter as tk
-
+from tkinter import ttk
 from PIL import Image, ImageTk
 
 from draw_behaviour import DrawBehaviour
@@ -7,17 +7,17 @@ from gui_toolkit import create_info_window
 from image_processing_toolkit import bgr_to_rgb, read_image, bgr_matrix_to_image, browse_for_video
 from pencil_config import PencilConfig
 from pencil_config_observer import PencilConfigObserver
-from py.colorized_image_subject import ColorizedImageSubject
-from py.image_colorizer_multiprocess import ImageColorizerMultiprocess
-from py.singleton_config import SingletonConfig
-from py.video_optimization_colorizer import VideoOptimizationColorizer
-from py.video_transfer_colorizer import VideoTransferColorizer
+from colorized_image_subject import ColorizedImageSubject
+from image_colorizer_multiprocess import ImageColorizerMultiprocess
+from singleton_config import SingletonConfig
+from video_optimization_colorizer import VideoOptimizationColorizer
+from video_transfer_colorizer import VideoTransferColorizer
 from update_behaviour import UpdateBehaviour
 
 
-class VideoDrawingCanvas(tk.LabelFrame):
-    def __init__(self, master):
-        tk.LabelFrame.__init__(self, master)
+class VideoDrawingCanvas(ttk.LabelFrame):
+    def __init__(self, master, **kw):
+        super().__init__(master, **kw)
         self.config(text='COLORIZATION')
         self._raw_image = None
         self._image = None

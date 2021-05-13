@@ -1,9 +1,9 @@
 import tkinter as tk
+from tkinter import ttk
 
-
-class PencilWidthPicker(tk.Frame):
-    def __init__(self, master, config_subject):
-        tk.Frame.__init__(self, master=master)
+class PencilWidthPicker(ttk.Frame):
+    def __init__(self, master, config_subject, **kw):
+        super().__init__(master, **kw)
         self.__init_default_values()
         self.__init_pencil_width()
         self.__create_slider()

@@ -6,7 +6,7 @@ from PIL import Image, ImageTk
 
 from image_colorizer_multiprocess import ImageColorizerMultiprocess
 from image_processing_toolkit import read_image
-from py.observer import Observer
+from observer import Observer
 
 
 class VideoDisplayCanvas(tk.LabelFrame, Observer):

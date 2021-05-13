@@ -1,4 +1,4 @@
-from py.video_optimization_colorizer import VideoOptimizationColorizer
+from video_optimization_colorizer import VideoOptimizationColorizer
 
 
 def main():

@@ -4,9 +4,9 @@ import sys
 import cv2
 import numpy as np
 
-from py.image_colorizer_multiprocess import ImageColorizerMultiprocess
-from py.image_processing_toolkit import bgr_matrix_to_image, bgr_to_rgb
-from py.singleton_config import SingletonConfig
+from image_colorizer_multiprocess import ImageColorizerMultiprocess
+from image_processing_toolkit import bgr_matrix_to_image, bgr_to_rgb
+from singleton_config import SingletonConfig
 
 
 class VideoOptimizationColorizer:

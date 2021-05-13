@@ -1,19 +1,20 @@
 import tkinter as tk
-
+from tkinter import ttk
 from PIL import Image, ImageTk
 
 from draw_behaviour import DrawBehaviour
+from gui_toolkit import create_info_window
 from image_processing_toolkit import browse_for_image, bgr_to_rgb, read_image, bgr_matrix_to_image
 from pencil_config import PencilConfig
 from pencil_config_observer import PencilConfigObserver
-from py.colorized_image_subject import ColorizedImageSubject
+from colorized_image_subject import ColorizedImageSubject
 from update_behaviour import UpdateBehaviour
-from gui_toolkit import create_info_window
 
 
-class DrawingCanvas(tk.LabelFrame):
-    def __init__(self, master):
-        tk.LabelFrame.__init__(self, master)
+class DrawingCanvas(ttk.Frame):
+    def __init__(self, master, **kw):
+        super().__init__(master, **kw)
+        # self.config(text='COLORIZATION')
         self._raw_image = None
         self._image = None
 
@@ -56,7 +57,9 @@ class DrawingCanvas(tk.LabelFrame):
         x, y, result = self.__update_behaviour.perform_colorize(bw, color)
         result = bgr_matrix_to_image(result)
         result = bgr_to_rgb(result)
-        self.__colorized_image_subject.notify(x_start=x, y_start=y, result=result)
+
+        self.__colorized_image_subject.notify(x_start=x, y_start=y, result=result,
+                                              reference=bw[y:y + result.shape[0], x:x + result.shape[1]])
         window.destroy()
 
     def __get_colorization_input(self):

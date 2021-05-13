@@ -1,17 +1,17 @@
 import tkinter as tk
-
+from tkinter import ttk
 import cv2
 import numpy as np
 from PIL import Image, ImageTk
 
 from image_colorizer_multiprocess import ImageColorizerMultiprocess
 from image_processing_toolkit import read_image
-from py.observer import Observer
+from observer import Observer
 
 
-class DisplayCanvas(tk.LabelFrame, Observer):
-    def __init__(self, master):
-        tk.LabelFrame.__init__(self, master)
+class DisplayCanvas(ttk.LabelFrame, Observer):
+    def __init__(self, master, **kw):
+        super().__init__(master, **kw)
         self.config(text='RESULT')
         self._raw_image = None
         self._image = None
@@ -46,6 +46,10 @@ class DisplayCanvas(tk.LabelFrame, Observer):
         y_start = kwargs.get('y_start')
         result = kwargs.get('result')
         fill = kwargs.get('fill')
+        reference = kwargs.get('reference')
+
+
+
         height = result.shape[0]
         width = result.shape[1]
         if fill is True:
@@ -54,6 +58,23 @@ class DisplayCanvas(tk.LabelFrame, Observer):
             self._canvas.config(width=result.shape[1])
         else:
             array = self._image_array.copy()
+
+            cv2.imshow('ref', reference)
+            cv2.waitKey(0)
+
+            cv2.imshow('result', result)
+            cv2.waitKey(0)
+
+            cv2.imshow('dif', result - reference)
+            cv2.waitKey(0)
+
+            was_colored = abs(result - reference).sum(axis=2) > 10
+
+            for i in range(was_colored.shape[0]):
+                for j in range(was_colored.shape[1]):
+                    if not was_colored[i, j]:
+                        result[i, j] = array[y_start + i, x_start + j]
+
             array[y_start:y_start + height, x_start:x_start + width] = result
             self.display(array)
 

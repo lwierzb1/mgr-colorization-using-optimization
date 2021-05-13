@@ -6,8 +6,8 @@ import os
 from display_canvas import DisplayCanvas
 from drawing_canvas import DrawingCanvas
 from image_processing_toolkit import bgr_to_rgb, write_image
-from py.video_display_canvas import VideoDisplayCanvas
-from py.video_drawing_canvas import VideoDrawingCanvas
+from video_display_canvas import VideoDisplayCanvas
+from video_drawing_canvas import VideoDrawingCanvas
 from singleton_config import SingletonConfig
 
 
@@ -122,6 +122,10 @@ def get_working_directory():
 
 if __name__ == '__main__':
     root = tk.Tk()
+    style = ttk.Style(root)
+    root.tk.call('source', 'style/azure.tcl')
+    style.theme_use('azure')
+
     root.state('zoomed')
     root.title('Colorization Using Optimization')
     root.style = ttk.Style(root)
@@ -134,6 +138,6 @@ if __name__ == '__main__':
     root.grid_rowconfigure(0, weight=1)
 
     init_ui(root)
-    root.style.theme_use(themename='vista')
+    root.style.theme_use(themename='default')
 
     root.mainloop()
