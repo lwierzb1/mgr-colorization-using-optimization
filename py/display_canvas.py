@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+
 import cv2
 import numpy as np
 from PIL import Image, ImageTk
@@ -54,17 +55,34 @@ class DisplayCanvas(ttk.Frame, Observer):
             self._canvas.config(height=result.shape[0])
             self._canvas.config(width=result.shape[1])
         else:
-            array = self._image_array.copy()
-            diff = reference - cv2.cvtColor(result, cv2.COLOR_RGB2BGR)
-            was_colored = np.sum(diff, axis=2) > (np.min(diff) * 1.2)
+            # array = self._image_array.copy()
+            needs_gray_detector = self.__check_if_needs_gray_detection(reference, x_start, y_start)
+            if needs_gray_detector:
+                result = self.__remove_grayscale_pixels_before_merge(result, x_start, y_start)
 
-            for i in range(was_colored.shape[0]):
-                for j in range(was_colored.shape[1]):
-                    if not was_colored[i, j]:
-                        result[i, j] = array[y_start + i, x_start + j]
+            self._image_array[y_start:y_start + height, x_start:x_start + width] = result
+            self.display(self._image_array)
 
-            array[y_start:y_start + height, x_start:x_start + width] = result
-            self.display(array)
+    def __check_if_needs_gray_detection(self, reference, x_start, y_start):
+        sub_array = self._image_array[y_start:y_start + reference.shape[0], x_start:x_start + reference.shape[1]]
+        bgr_sub_array = cv2.cvtColor(sub_array, cv2.COLOR_RGB2BGR)
+        return not np.allclose(bgr_sub_array, reference)
 
-    def get_result(self):
-        return self._image_array
+    def __remove_grayscale_pixels_before_merge(self, result, x_start, y_start):
+        hsv = cv2.cvtColor(result, cv2.COLOR_RGB2HSV)
+        lower_gray = np.array([0, 5, 10], np.uint8)
+        upper_gray = np.array([179, 50, 255], np.uint8)
+        mask_gray = cv2.inRange(hsv, lower_gray, upper_gray)
+        img_res = cv2.bitwise_and(result, result, mask=mask_gray)
+
+        was_colored = np.sum(img_res, axis=2) == 0
+
+        for i in range(was_colored.shape[0]):
+            for j in range(was_colored.shape[1]):
+                if not was_colored[i, j]:
+                    result[i, j] = self._image_array[y_start + i, x_start + j]
+        return result
+
+
+def get_result(self):
+    return self._image_array

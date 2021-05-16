@@ -6,6 +6,7 @@ import os
 from display_canvas import DisplayCanvas
 from drawing_canvas import DrawingCanvas
 from image_processing_toolkit import bgr_to_rgb, write_image
+from py.styled_observer_button import StyledObserverButton
 from video_display_canvas import VideoDisplayCanvas
 from video_drawing_canvas import VideoDrawingCanvas
 from singleton_config import SingletonConfig
@@ -44,13 +45,40 @@ def reset_ui_video(root_node, drawing_canvas, display_canvas):
 
 
 def init_buttons_for_image(root_node, drawing_canvas, display_canvas):
-    menu = tk.Menu(root_node)
-    menu.add_cascade(label='SAVE RESULT', command=lambda: save_result(display_canvas))
-    menu.add_separator()
-    menu.add_cascade(label='RESET', command=lambda: reset_ui_image(root_node, drawing_canvas, display_canvas))
-    menu.add_separator()
-    menu.add_cascade(label='ABOUT', command=lambda: show_about())
-    root_node.config(menu=menu)
+    buttons_frame = ttk.Frame(root_node)
+    save_result_button = StyledObserverButton(buttons_frame, text='SAVE RESULT', style='AccentButton',
+                                              command=lambda: save_result(display_canvas), state=tk.DISABLED)
+    reset_button = StyledObserverButton(buttons_frame, text='RESET', style='AccentButton',
+                                        command=lambda: reset_ui_image(root_node, drawing_canvas, display_canvas),
+                                        state=tk.DISABLED)
+    save_state_button = StyledObserverButton(buttons_frame, text='SAVE STATE', style='AccentButton',
+                                             command=lambda: drawing_canvas.save_state(), state=tk.DISABLED)
+    restore_state_button = StyledObserverButton(buttons_frame, text='RESTORE STATE', style='AccentButton',
+                                                command=lambda: drawing_canvas.restore_state())
+    about_button = StyledObserverButton(buttons_frame, text='ABOUT', style='AccentButton',
+                                        command=lambda: show_about())
+
+    save_result_button.pack(fill=tk.BOTH, pady=10)
+    reset_button.pack(fill=tk.BOTH, pady=10)
+    save_state_button.pack(fill=tk.BOTH, pady=10)
+    restore_state_button.pack(fill=tk.BOTH, pady=10)
+    about_button.pack(fill=tk.BOTH, pady=10)
+
+    drawing_canvas.add_colorization_process_observer(save_result_button)
+    drawing_canvas.add_colorization_process_observer(reset_button)
+    drawing_canvas.add_colorization_process_observer(save_state_button)
+    drawing_canvas.add_colorization_process_observer(save_result_button)
+    # menu.add_cascade(label='SAVE RESULT', command=lambda: save_result(display_canvas))
+    # menu.add_separator()
+    # menu.add_cascade(label='RESET', command=lambda: reset_ui_image(root_node, drawing_canvas, display_canvas))
+    # menu.add_separator()
+    # menu.add_cascade(label='SAVE STATE', command=lambda: drawing_canvas.save_state())
+    # menu.add_separator()
+    # menu.add_cascade(label='RESTORE STATE', command=lambda: drawing_canvas.restore_state())
+    # menu.add_separator()
+    # menu.add_cascade(label='ABOUT', command=lambda: show_about())
+    # root_node.config(menu=menu)
+    buttons_frame.grid(row=0, column=2)
 
 
 def save_result(display_canvas: DisplayCanvas):
@@ -138,5 +166,7 @@ if __name__ == '__main__':
     root.grid_rowconfigure(0, weight=1)
 
     init_ui(root)
-
+    root.grid_columnconfigure(0, weight=40)
+    root.grid_columnconfigure(1, weight=40)
+    root.grid_columnconfigure(2, weight=20)
     root.mainloop()

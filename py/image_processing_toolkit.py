@@ -82,7 +82,7 @@ def browse_for_image():
                                           title="Select an image",
                                           filetypes=[("BMP Files", "*.bmp")])
     if filename:
-        return read_image(filename)
+        return filename
     else:
         return None
 

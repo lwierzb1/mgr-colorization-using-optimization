@@ -1,6 +1,8 @@
-from drawing_command import DrawingCommand
 import tkinter as tk
+
 import cv2
+
+from drawing_command import DrawingCommand
 from image_processing_toolkit import hex_to_bgr
 
 
@@ -12,6 +14,18 @@ class LineDrawingCommand(DrawingCommand):
         self._stop = kwargs.get('stop')
         self._width = kwargs.get('width')
         self._fill = kwargs.get('fill')
+
+    @classmethod
+    def from_json(cls, canvas, json):
+        return cls(canvas, start=tuple(json['start']), stop=tuple(json['stop']), width=json['width'], fill=json['fill'])
+
+    def get_state(self):
+        state = dict()
+        state['start'] = self._start
+        state['stop'] = self._stop
+        state['width'] = self._width
+        state['fill'] = self._fill
+        return state
 
     def undo(self):
         self._canvas.delete(self._line_id)

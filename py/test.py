@@ -2,7 +2,7 @@
 # Place the BW video, marked image frame in the same directory as this python file
 # Under the if __name__ == '__main__': fill in the grey_name, marked_name, and color_name. Run the python script
 
-
+import time
 import math
 import sys
 
@@ -71,13 +71,18 @@ if __name__ == '__main__':
     marked_name2 = "D:/studia/mgr/sources/mgr-colorization-using-optimization/test/video/result.bmp"  # BW image with color markings. Only use BMP
     color_name = "C:/Users/Lukasz/Downloads/OMCS6475_FinalProject-master/toddlermarked"  # Specify the file name of the final colorized image. LEAVE OUT FILE EXTENSION
 
-    a1 = 'D:/studia/mgr/sources/mgr-colorization-using-optimization/test/video/1.png'
-    a2 = 'D:/studia/mgr/sources/mgr-colorization-using-optimization/test/video/2.png'
+    # for i in range(1, 11):
+    #     t = time.time()
+    #     a1 = 'D:/studia/mgr/sources/mgr-colorization-using-optimization/test_hd/' + str(i) + '_bw.bmp'
+    #     a2 = 'D:/studia/mgr/sources/mgr-colorization-using-optimization/test_hd/' + str(i) + '_result.bmp'
+    #
+    #     c = ColorTransfer()
+    #     res = c.transfer(cv2.imread(a2), cv2.imread(a1))
+    #     cv2.imwrite(str(i) + '__transfer.bmp', res)
+    #     stop = time.time()
+    #     print('[]' + '(' + str(i) + ')', stop - t)
 
-    # c = ColorTransfer()
-    # c.transfer(cv2.imread(a1), cv2.imread(a2))
-
-    # v = VideoOptimizationColorizer(grey_name)
+    # v = VideoOptimizationColorizer(None, grey_name)
     # v.colorize_video(marked_name)
 
     v = VideoTransferColorizer(None, grey_name)

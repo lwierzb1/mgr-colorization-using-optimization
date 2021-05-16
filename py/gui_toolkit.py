@@ -1,4 +1,5 @@
 import tkinter as tk
+from tkinter import ttk
 
 
 def create_info_window(text):
@@ -17,6 +18,12 @@ def create_info_window(text):
 
     label = tk.Label(window, text=text)
     label.pack()
+
+    progress_bar = ttk.Progressbar(window, orient=tk.HORIZONTAL, mode='indeterminate')
+    progress_bar.start()
+    progress_bar.pack()
+
     window.lift()
     window.update()
     return window
+

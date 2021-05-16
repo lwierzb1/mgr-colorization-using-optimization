@@ -11,9 +11,13 @@ class DrawBehaviour:
         self.__canvas = canvas
         self.__old_x = None
         self.__old_y = None
+        self.__history = dict()
         self.created_lines = []
         self.executed_commands = []
         self._undo_commands = []
+
+    def save_state(self):
+        return [x.get_state() for x in self.executed_commands]
 
     def undo_last_command(self):
         if len(self.executed_commands) > 0:

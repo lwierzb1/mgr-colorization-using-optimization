@@ -1,6 +1,11 @@
 import tkinter as tk
-from tkinter import ttk
+import json
+from tkinter import ttk, filedialog
+from tkinter.filedialog import askopenfile
+
 from PIL import Image, ImageTk
+import mock
+import numpy as np
 
 from draw_behaviour import DrawBehaviour
 from gui_toolkit import create_info_window
@@ -8,24 +13,78 @@ from image_processing_toolkit import browse_for_image, bgr_to_rgb, read_image, b
 from pencil_config import PencilConfig
 from pencil_config_observer import PencilConfigObserver
 from colorized_image_subject import ColorizedImageSubject
+from py.colorization_process_subject import ColorizationProcessSubject
+from py.line_drawing_command import LineDrawingCommand
 from update_behaviour import UpdateBehaviour
 
 
 class DrawingCanvas(ttk.Frame):
     def __init__(self, master, **kw):
         super().__init__(master, **kw)
-        # self.config(text='COLORIZATION')
         self._raw_image = None
         self._image = None
+        self._image_path = None
+        self._in_restore = False
+        self._state = dict()
+        self._state['stop'] = []
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
+        self._colorization_process_subject = ColorizationProcessSubject()
         self.__show_default_image()
         self.__bind_mouse_events_for_load_image()
         self.__init_colorized_image_subject()
+        self._colorization_process_subject.notify(start=False)
+
+    def restore_state(self):
+        self._in_restore = True
+        file = askopenfile(mode='r', filetypes=[('JSON files', '*.json')])
+        if file is not None:
+            data = json.load(file)
+            data = json.loads(data)
+            self._image_path = data['bw']
+            image = read_image(self._image_path)
+            self.__init_bw_matrix(image)
+            self.__init_pencil_config()
+            self.__init_draw_behaviour()
+            self.__init_update_behaviour()
+            self.__bind_mouse_events()
+            self.display(bgr_to_rgb(self.__matrix))
+            self.__push_bw_image()
+            json_hints = data['hints']
+            stops = np.array(data['stop'])
+            counter = 0
+            for hint in json_hints:
+                hint_command = LineDrawingCommand.from_json(self._canvas, hint)
+                hint_command.execute()
+                self.__draw_behaviour.executed_commands.append(hint_command)
+                obj = mock.Mock()
+                obj.x = hint['start'][0]
+                obj.y = hint['start'][1]
+                self.__update_behaviour.on_click(obj)
+                obj.x = hint['stop'][0]
+                obj.y = hint['stop'][1]
+                self.__update_behaviour.on_click(obj)
+                counter += 1
+                if counter in stops:
+                    self.__colorize()
+
+            self._in_restore = False
+
+    def save_state(self):
+        self._state['hints'] = self.__draw_behaviour.save_state()
+        state_value = json.dumps(self._state)
+        file = filedialog.asksaveasfile(mode='w', defaultextension=".json")
+
+        if file:
+            file.write(json.dumps(state_value))
+            file.close()
 
     def add_observer(self, observer):
         self.__colorized_image_subject.attach(observer)
+
+    def add_colorization_process_observer(self, observer):
+        self._colorization_process_subject.attach(observer)
 
     def display(self, matrix):
         self._raw_image = ImageTk.PhotoImage(image=Image.fromarray(matrix))
@@ -49,6 +108,7 @@ class DrawingCanvas(ttk.Frame):
 
     def on_mouse_release(self, e):
         self.__draw_behaviour.on_release(e)
+        self._state['stop'].append(len(self.__draw_behaviour.executed_commands))
         self.__colorize()
 
     def __colorize(self):
@@ -98,8 +158,10 @@ class DrawingCanvas(ttk.Frame):
         self._canvas.bind("<Button-1>", self.__load_image)
 
     def __load_image(self, e):
-        image = browse_for_image()
-        if image is not None:
+        self._image_path = browse_for_image()
+        self._state['bw'] = self._image_path
+        if self._image_path is not None:
+            image = read_image(self._image_path)
             self.__init_bw_matrix(image)
             self.__init_pencil_config()
             self.__init_draw_behaviour()
@@ -107,6 +169,7 @@ class DrawingCanvas(ttk.Frame):
             self.__bind_mouse_events()
             self.display(bgr_to_rgb(self.__matrix))
             self.__push_bw_image()
+            self._colorization_process_subject.notify(start=True)
 
     def __init_bw_matrix(self, matrix):
         self.__matrix = matrix

@@ -1,7 +1,6 @@
 import cv2
 
 from color_transfer import ColorTransfer
-from image_processing_toolkit import bgr_to_rgb
 
 
 class VideoTransferColorizer:
@@ -41,7 +40,6 @@ class VideoTransferColorizer:
         while self.__read_next_video_frame():
             result = self.__colorize_frame()
             # self._colorized_image_subject.notify(fill=True, result=bgr_to_rgb(result))
-            # self._marked_frame = result
             self.__append_frame_to_video(result)
 
     def __append_frame_to_video(self, frame):
@@ -58,7 +56,7 @@ class VideoTransferColorizer:
         self.__shift_last_frame()
         ret, frame = self._cap.read()
         self._current_frame = frame
-        self.video_ended = ret
+        self.video_ended = not ret
         return ret
 
     def __shift_last_frame(self):
