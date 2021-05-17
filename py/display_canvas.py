@@ -27,7 +27,8 @@ class DisplayCanvas(ttk.Frame, Observer):
     def __init_canvas(self, input_matrix):
         self._image = None
         self._raw_image = None
-        self._canvas = tk.Canvas(self, height=input_matrix.shape[0], width=input_matrix.shape[1])
+        self._canvas = tk.Canvas(self, height=input_matrix.shape[0], width=input_matrix.shape[1], bd=0,
+                                 highlightthickness=0)
         self._canvas.pack()
 
     def display(self, array):
@@ -83,6 +84,5 @@ class DisplayCanvas(ttk.Frame, Observer):
                     result[i, j] = self._image_array[y_start + i, x_start + j]
         return result
 
-
-def get_result(self):
-    return self._image_array
+    def get_result(self):
+        return self._image_array

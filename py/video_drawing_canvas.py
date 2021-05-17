@@ -9,6 +9,7 @@ from pencil_config import PencilConfig
 from pencil_config_observer import PencilConfigObserver
 from colorized_image_subject import ColorizedImageSubject
 from image_colorizer_multiprocess import ImageColorizerMultiprocess
+from py.colorization_process_subject import ColorizationProcessSubject
 from singleton_config import SingletonConfig
 from video_optimization_colorizer import VideoOptimizationColorizer
 from video_transfer_colorizer import VideoTransferColorizer
@@ -21,18 +22,23 @@ class VideoDrawingCanvas(ttk.Frame):
         self._raw_image = None
         self._image = None
         self._video_colorizer = None
+        self._colorization_process_subject = ColorizationProcessSubject()
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
         self.__show_default_image()
         self.__bind_mouse_events_for_load_image()
         self.__init_colorized_image_subject()
+        self._colorization_process_subject.notify(start=False)
 
     def force_save_video(self):
         self._video_colorizer.force_save()
 
     def add_observer(self, observer):
         self.__colorized_image_subject.attach(observer)
+
+    def add_colorization_process_observer(self, observer):
+        self._colorization_process_subject.attach(observer)
 
     def go_next(self):
         window = create_info_window("Performing colorization. Please wait...")
@@ -101,7 +107,8 @@ class VideoDrawingCanvas(ttk.Frame):
     def __init_canvas(self, input_matrix):
         self._image = None
         self._raw_image = None
-        self._canvas = tk.Canvas(self, height=input_matrix.shape[0], width=input_matrix.shape[1])
+        self._canvas = tk.Canvas(self, height=input_matrix.shape[0], width=input_matrix.shape[1], bd=0,
+                                 highlightthickness=0)
         self._canvas.pack(side=tk.RIGHT)
 
     def __init_pencil_config(self):
@@ -143,6 +150,7 @@ class VideoDrawingCanvas(ttk.Frame):
             self.__bind_mouse_events()
             self.display(bgr_to_rgb(self.__matrix))
             self.__push_bw_image()
+            self._colorization_process_subject.notify(start=True)
 
     def __init_bw_matrix(self, matrix):
         self.__matrix = matrix

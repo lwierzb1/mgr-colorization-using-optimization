@@ -13,6 +13,13 @@ class SingletonConfig:
         return SingletonConfig.__instance
 
     def __init__(self):
+        self.mode = None
+        self.jacobi_approximation = None
+        self.linear_algorithm = None
+        self.processes = None
+        self.colorization_algorithm = None
+        self.max_video_frames_per_section = None
+
         """ Virtually private constructor. """
         if SingletonConfig.__instance is not None:
             raise Exception("This class is a singleton!")
@@ -28,12 +35,10 @@ class SingletonConfig:
         self.processes = config.getint('colorizer', 'process_no')
         self.colorization_algorithm = config.get('colorizer', 'colorization_algorithm')
 
-        if 'jacobi_approximation' in config:
-            self.jacobi_approximation = config.getint('colorizer', 'jacobi_approximation')
-        else:
-            self.jacobi_approximation = None
+        if config.has_option('colorizer', 'jacobi_approximation'):
+            self.jacobi_approximation = config.getfloat('colorizer', 'jacobi_approximation')
 
-        if 'max_video_frames_per_section' in config:
+        if config.has_option('colorizer', 'max_video_frames_per_section'):
             self.max_video_frames_per_section = config.getint('colorizer', 'max_video_frames_per_section')
         else:
             self.max_video_frames_per_section = 10
@@ -56,3 +61,19 @@ class SingletonConfig:
 
         if self.processes is None:
             self.processes = 1
+
+    def save_state(self):
+        state_value = dict()
+        state_value['mode'] = self.mode
+        state_value['processes'] = self.processes
+        state_value['colorization_algorithm'] = self.colorization_algorithm
+        state_value['max_video_frames_per_section'] = self.max_video_frames_per_section
+        state_value['linear_algorithm'] = self.linear_algorithm
+        return state_value
+
+    def restore_state(self, data):
+        self.mode = data['mode']
+        self.processes = data['processes']
+        self.colorization_algorithm = data['colorization_algorithm']
+        self.linear_algorithm = data['linear_algorithm']
+        self.max_video_frames_per_section = data['max_video_frames_per_section']

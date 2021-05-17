@@ -26,7 +26,8 @@ class PencilWidthPicker(ttk.Frame):
     def __create_pencil_width_example_display(self):
         self._canvas = tk.Canvas(self,
                                  width=self.__EXAMPLE_CANVAS_WIDTH,
-                                 height=self.__EXAMPLE_CANVAS_HEIGHT)
+                                 height=self.__EXAMPLE_CANVAS_HEIGHT, bd=0,
+                                 highlightthickness=0)
         self._canvas.pack()
 
     def __update_pencil_width(self, value):

@@ -1,7 +1,9 @@
+import json
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import messagebox, filedialog
 from tkinter import ttk
 import os
+from tkinter.filedialog import askopenfile
 
 from display_canvas import DisplayCanvas
 from drawing_canvas import DrawingCanvas
@@ -52,9 +54,9 @@ def init_buttons_for_image(root_node, drawing_canvas, display_canvas):
                                         command=lambda: reset_ui_image(root_node, drawing_canvas, display_canvas),
                                         state=tk.DISABLED)
     save_state_button = StyledObserverButton(buttons_frame, text='SAVE STATE', style='AccentButton',
-                                             command=lambda: drawing_canvas.save_state(), state=tk.DISABLED)
+                                             command=lambda: save_state(drawing_canvas), state=tk.DISABLED)
     restore_state_button = StyledObserverButton(buttons_frame, text='RESTORE STATE', style='AccentButton',
-                                                command=lambda: drawing_canvas.restore_state())
+                                                command=lambda: restore_state(drawing_canvas, display_canvas))
     about_button = StyledObserverButton(buttons_frame, text='ABOUT', style='AccentButton',
                                         command=lambda: show_about())
 
@@ -68,16 +70,7 @@ def init_buttons_for_image(root_node, drawing_canvas, display_canvas):
     drawing_canvas.add_colorization_process_observer(reset_button)
     drawing_canvas.add_colorization_process_observer(save_state_button)
     drawing_canvas.add_colorization_process_observer(save_result_button)
-    # menu.add_cascade(label='SAVE RESULT', command=lambda: save_result(display_canvas))
-    # menu.add_separator()
-    # menu.add_cascade(label='RESET', command=lambda: reset_ui_image(root_node, drawing_canvas, display_canvas))
-    # menu.add_separator()
-    # menu.add_cascade(label='SAVE STATE', command=lambda: drawing_canvas.save_state())
-    # menu.add_separator()
-    # menu.add_cascade(label='RESTORE STATE', command=lambda: drawing_canvas.restore_state())
-    # menu.add_separator()
-    # menu.add_cascade(label='ABOUT', command=lambda: show_about())
-    # root_node.config(menu=menu)
+
     buttons_frame.grid(row=0, column=2)
 
 
@@ -98,6 +91,27 @@ def save_result_video(drawing_canvas: VideoDrawingCanvas):
 def show_about():
     messagebox.showinfo("Colorization Using Optimization",
                         "Master Thesis Colorization Program.\nAuthor: Łukasz Wierzbicki, 277446.")
+
+
+def save_state(drawing):
+    file = filedialog.asksaveasfile(mode='w', defaultextension=".json",
+                                    filetypes=(("JSON file", "*.json"), ("All Files", "*.*")))
+
+    if file:
+        drawing_canvas_state = drawing.save_state()
+        config_state = SingletonConfig.get_instance().save_state()
+        state_value = json.dumps(drawing_canvas_state | config_state)
+        file.write(state_value)
+
+        file.close()
+
+
+def restore_state(drawing, display):
+    file = askopenfile(mode='r', filetypes=[('JSON files', '*.json')])
+    if file is not None:
+        data = json.load(file)
+        SingletonConfig.get_instance().restore_state(data)
+        drawing.restore_state(data)
 
 
 def init_drawing_canvas_for_image(root_node):
@@ -133,16 +147,32 @@ def init_display_canvas_for_video(root_node):
 
 
 def init_buttons_for_video(root_node, drawing_canvas, display_canvas):
-    menu = tk.Menu(root_node)
-    menu.add_cascade(label='PERFORM COLORIZE', command=lambda: drawing_canvas.go_next())
-    menu.add_separator()
-    menu.add_cascade(label='SAVE RESULT', command=lambda: save_result_video(drawing_canvas))
-    menu.add_separator()
-    menu.add_cascade(label='RESET', command=lambda: reset_ui_video(root_node, drawing_canvas, display_canvas))
-    menu.add_separator()
-    menu.add_cascade(label='ABOUT', command=lambda: show_about())
-    root_node.config(menu=menu)
+    buttons_frame = ttk.Frame(root_node)
+    save_result_button = StyledObserverButton(buttons_frame, text='PERFORM COLORIZE', style='AccentButton',
+                                              command=lambda: drawing_canvas.go_next(), state=tk.DISABLED)
+    reset_button = StyledObserverButton(buttons_frame, text='SAVE RESULT', style='AccentButton',
+                                        command=lambda: save_result_video(drawing_canvas),
+                                        state=tk.DISABLED)
+    save_state_button = StyledObserverButton(buttons_frame, text='RESET', style='AccentButton',
+                                             command=lambda: reset_ui_video(root_node, drawing_canvas, display_canvas),
+                                             state=tk.DISABLED)
+    # restore_state_button = StyledObserverButton(buttons_frame, text='RESTORE STATE', style='AccentButton',
+    #                                             command=lambda: restore_state(drawing_canvas, display_canvas))
+    about_button = StyledObserverButton(buttons_frame, text='ABOUT', style='AccentButton',
+                                        command=lambda: show_about())
 
+    save_result_button.pack(fill=tk.BOTH, pady=10)
+    reset_button.pack(fill=tk.BOTH, pady=10)
+    save_state_button.pack(fill=tk.BOTH, pady=10)
+    # restore_state_button.pack(fill=tk.BOTH, pady=10)
+    about_button.pack(fill=tk.BOTH, pady=10)
+
+    drawing_canvas.add_colorization_process_observer(save_result_button)
+    drawing_canvas.add_colorization_process_observer(reset_button)
+    drawing_canvas.add_colorization_process_observer(save_state_button)
+    drawing_canvas.add_colorization_process_observer(save_result_button)
+
+    buttons_frame.grid(row=0, column=2)
 
 def get_working_directory():
     return os.path.dirname(os.path.abspath(__file__)).replace('\\', '/')

@@ -1,20 +1,18 @@
 import tkinter as tk
-import json
-from tkinter import ttk, filedialog
-from tkinter.filedialog import askopenfile
+from tkinter import ttk
 
-from PIL import Image, ImageTk
 import mock
 import numpy as np
+from PIL import Image, ImageTk
 
+from colorization_process_subject import ColorizationProcessSubject
+from colorized_image_subject import ColorizedImageSubject
 from draw_behaviour import DrawBehaviour
 from gui_toolkit import create_info_window
 from image_processing_toolkit import browse_for_image, bgr_to_rgb, read_image, bgr_matrix_to_image
+from line_drawing_command import LineDrawingCommand
 from pencil_config import PencilConfig
 from pencil_config_observer import PencilConfigObserver
-from colorized_image_subject import ColorizedImageSubject
-from py.colorization_process_subject import ColorizationProcessSubject
-from py.line_drawing_command import LineDrawingCommand
 from update_behaviour import UpdateBehaviour
 
 
@@ -36,49 +34,41 @@ class DrawingCanvas(ttk.Frame):
         self.__init_colorized_image_subject()
         self._colorization_process_subject.notify(start=False)
 
-    def restore_state(self):
+    def restore_state(self, data):
         self._in_restore = True
-        file = askopenfile(mode='r', filetypes=[('JSON files', '*.json')])
-        if file is not None:
-            data = json.load(file)
-            data = json.loads(data)
-            self._image_path = data['bw']
-            image = read_image(self._image_path)
-            self.__init_bw_matrix(image)
-            self.__init_pencil_config()
-            self.__init_draw_behaviour()
-            self.__init_update_behaviour()
-            self.__bind_mouse_events()
-            self.display(bgr_to_rgb(self.__matrix))
-            self.__push_bw_image()
-            json_hints = data['hints']
-            stops = np.array(data['stop'])
-            counter = 0
-            for hint in json_hints:
-                hint_command = LineDrawingCommand.from_json(self._canvas, hint)
-                hint_command.execute()
-                self.__draw_behaviour.executed_commands.append(hint_command)
-                obj = mock.Mock()
-                obj.x = hint['start'][0]
-                obj.y = hint['start'][1]
-                self.__update_behaviour.on_click(obj)
-                obj.x = hint['stop'][0]
-                obj.y = hint['stop'][1]
-                self.__update_behaviour.on_click(obj)
-                counter += 1
-                if counter in stops:
-                    self.__colorize()
+
+        self._image_path = data['bw']
+        image = read_image(self._image_path)
+        self.__init_bw_matrix(image)
+        self.__init_pencil_config()
+        self.__init_draw_behaviour()
+        self.__init_update_behaviour()
+        self.__bind_mouse_events()
+        self.display(bgr_to_rgb(self.__matrix))
+        self.__push_bw_image()
+        json_hints = data['hints']
+        stops = np.array(data['stop'])
+        counter = 0
+        for hint in json_hints:
+            hint_command = LineDrawingCommand.from_json(self._canvas, hint)
+            hint_command.execute()
+            self.__draw_behaviour.executed_commands.append(hint_command)
+            obj = mock.Mock()
+            obj.x = hint['start'][0]
+            obj.y = hint['start'][1]
+            self.__update_behaviour.on_click(obj)
+            obj.x = hint['stop'][0]
+            obj.y = hint['stop'][1]
+            self.__update_behaviour.on_click(obj)
+            counter += 1
+            if counter in stops:
+                self.__colorize()
 
             self._in_restore = False
 
     def save_state(self):
         self._state['hints'] = self.__draw_behaviour.save_state()
-        state_value = json.dumps(self._state)
-        file = filedialog.asksaveasfile(mode='w', defaultextension=".json")
-
-        if file:
-            file.write(json.dumps(state_value))
-            file.close()
+        return self._state
 
     def add_observer(self, observer):
         self.__colorized_image_subject.attach(observer)
@@ -134,7 +124,8 @@ class DrawingCanvas(ttk.Frame):
     def __init_canvas(self, input_matrix):
         self._image = None
         self._raw_image = None
-        self._canvas = tk.Canvas(self, height=input_matrix.shape[0], width=input_matrix.shape[1])
+        self._canvas = tk.Canvas(self, height=input_matrix.shape[0], width=input_matrix.shape[1], bd=0,
+                                 highlightthickness=0)
         self._canvas.pack(side=tk.RIGHT)
 
     def __init_pencil_config(self):
@@ -185,5 +176,5 @@ class DrawingCanvas(ttk.Frame):
         self.__colorized_image_subject = ColorizedImageSubject()
 
     def __push_bw_image(self):
-        result = bgr_to_rgb(self.__matrix.copy())
+        result = bgr_to_rgb(self.__matrix)
         self.__colorized_image_subject.notify(x_start=0, y_start=0, result=result, fill=True)
