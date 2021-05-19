@@ -42,7 +42,7 @@ class VideoDrawingCanvas(ttk.Frame):
 
     def go_next(self):
         window = create_info_window("Performing colorization. Please wait...")
-        colorization_algorithm = SingletonConfig.get_instance().colorization_algorithm
+        colorization_algorithm = SingletonConfig().colorization_algorithm
         if colorization_algorithm == 'CUO':
             color = self.__get_scribbles_matrix()
             self._video_colorizer.colorize_video(color)
@@ -82,7 +82,7 @@ class VideoDrawingCanvas(ttk.Frame):
 
     def on_mouse_release(self, e):
         self.__draw_behaviour.on_release(e)
-        colorization_algorithm = SingletonConfig.get_instance().colorization_algorithm
+        colorization_algorithm = SingletonConfig().colorization_algorithm
         if colorization_algorithm == 'CT':
             self.__colorize()
 
@@ -134,7 +134,7 @@ class VideoDrawingCanvas(ttk.Frame):
     def __load_image(self, e):
         video_filename = browse_for_video()
         if video_filename is not None:
-            colorization_algorithm = SingletonConfig.get_instance().colorization_algorithm
+            colorization_algorithm = SingletonConfig().colorization_algorithm
 
             if colorization_algorithm == 'CUO':
                 self._video_colorizer = VideoOptimizationColorizer(self.__colorized_image_subject, video_filename)

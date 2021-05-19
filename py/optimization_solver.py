@@ -33,7 +33,7 @@ class OptimizationSolver:
         self.__idx_colored = np.nonzero(has_hints.reshape(self.__IMAGE_SIZE, order='F'))
 
     def optimize(self, u_channel, v_channel):
-        config = SingletonConfig.get_instance()
+        config = SingletonConfig()
         jacobi_approximation = config.jacobi_approximation
         lin_alg = config.linear_algorithm
 

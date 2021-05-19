@@ -11,7 +11,7 @@ from singleton_config import SingletonConfig
 
 class VideoOptimizationColorizer:
     def __init__(self, colorized_image_subject, video_path):
-        config = SingletonConfig.get_instance()
+        config = SingletonConfig()
         self.video_ended = False
         self._out = None
         self._cap = None

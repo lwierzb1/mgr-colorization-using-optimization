@@ -21,7 +21,7 @@ __email__ = "01113202@pw.edu.pl"
 
 
 def main():
-    config = SingletonConfig.get_instance()
+    config = SingletonConfig()
     start = time.time()
     image_colorizer = ImageColorizerMultiprocess(config.get_args().input, config.get_args().marked)
     result = image_colorizer.colorize()
