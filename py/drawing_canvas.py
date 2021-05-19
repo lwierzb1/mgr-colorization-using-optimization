@@ -13,6 +13,8 @@ from image_processing_toolkit import browse_for_image, bgr_to_rgb, read_image, b
 from line_drawing_command import LineDrawingCommand
 from pencil_config import PencilConfig
 from pencil_config_observer import PencilConfigObserver
+from py.color_transfer import ColorTransfer
+from py.singleton_config import SingletonConfig
 from update_behaviour import UpdateBehaviour
 
 
@@ -35,8 +37,27 @@ class DrawingCanvas(ttk.Frame):
         self._colorization_process_subject.notify(start=False)
 
     def restore_state(self, data):
-        self._in_restore = True
+        colorization_algorithm = SingletonConfig().colorization_algorithm
+        if colorization_algorithm == 'CUO':
+            self._restore_state_cuo(data)
+        else:
+            self._restore_state_ct(data)
 
+    def _restore_state_ct(self, data):
+        self._image_path = data['bw']
+        image = read_image(self._image_path)
+        self.__init_bw_matrix(image)
+        self.display(bgr_to_rgb(self.__matrix))
+        self.__push_bw_image()
+
+        self._image_path = data['ref']
+        image = read_image(self._image_path)
+        self.__init_bw_matrix(image)
+        self.display(bgr_to_rgb(self.__matrix))
+
+        self.__colorize_ct(read_image(data['ref']), read_image(data['bw']))
+
+    def _restore_state_cuo(self, data):
         self._image_path = data['bw']
         image = read_image(self._image_path)
         self.__init_bw_matrix(image)
@@ -64,10 +85,10 @@ class DrawingCanvas(ttk.Frame):
             if counter in stops:
                 self.__colorize()
 
-            self._in_restore = False
-
     def save_state(self):
-        self._state['hints'] = self.__draw_behaviour.save_state()
+        colorization_algorithm = SingletonConfig().colorization_algorithm
+        if colorization_algorithm == 'CUO':
+            self._state['hints'] = self.__draw_behaviour.save_state()
         return self._state
 
     def add_observer(self, observer):
@@ -149,18 +170,47 @@ class DrawingCanvas(ttk.Frame):
         self._canvas.bind("<Button-1>", self.__load_image)
 
     def __load_image(self, e):
-        self._image_path = browse_for_image()
-        self._state['bw'] = self._image_path
-        if self._image_path is not None:
-            image = read_image(self._image_path)
-            self.__init_bw_matrix(image)
-            self.__init_pencil_config()
-            self.__init_draw_behaviour()
-            self.__init_update_behaviour()
-            self.__bind_mouse_events()
-            self.display(bgr_to_rgb(self.__matrix))
-            self.__push_bw_image()
-            self._colorization_process_subject.notify(start=True)
+        colorization_algorithm = SingletonConfig().colorization_algorithm
+        if colorization_algorithm == 'CUO':
+            self._image_path = browse_for_image()
+            self._state['bw'] = self._image_path
+            if self._image_path is not None:
+                image = read_image(self._image_path)
+                self.__init_bw_matrix(image)
+                self.__init_pencil_config()
+                self.__init_draw_behaviour()
+                self.__init_update_behaviour()
+                self.__bind_mouse_events()
+                self.display(bgr_to_rgb(self.__matrix))
+                self.__push_bw_image()
+                self._colorization_process_subject.notify(start=True)
+        else:
+            self._image_path = browse_for_image()
+            self._state['bw'] = self._image_path
+            if self._image_path is not None:
+                image = read_image(self._image_path)
+                self.__init_bw_matrix(image)
+                self.display(bgr_to_rgb(self.__matrix))
+                self.__push_bw_image()
+
+            self._image_path = browse_for_image()
+            self._state['ref'] = self._image_path
+            if self._image_path is not None:
+                image = read_image(self._image_path)
+                self.__init_bw_matrix(image)
+                self.display(bgr_to_rgb(self.__matrix))
+                self.update()
+
+            self.__colorize_ct(read_image(self._state['ref']), read_image(self._state['bw']))
+
+    def __colorize_ct(self, ref, bw):
+        colorizer = ColorTransfer()
+        window = create_info_window("Performing colorization. Please wait...")
+        result = colorizer.transfer(ref, bw)
+        window.destroy()
+        result = bgr_to_rgb(result)
+        self.__colorized_image_subject.notify(x_start=0, y_start=0, result=result, fill=True)
+        self._colorization_process_subject.notify(start=True)
 
     def __init_bw_matrix(self, matrix):
         self.__matrix = matrix
