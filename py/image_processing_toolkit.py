@@ -77,9 +77,9 @@ def hex_to_bgr(value):
     return rgb
 
 
-def browse_for_image():
+def browse_for_image(title):
     filename = filedialog.askopenfilename(initialdir="/",
-                                          title="Select an image",
+                                          title=title,
                                           filetypes=[("BMP Files", "*.bmp")])
     if filename:
         return filename

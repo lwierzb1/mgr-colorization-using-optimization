@@ -80,9 +80,11 @@ class VideoOptimizationColorizer:
 
                 v0 = points[tuple(min_distance_point)]
                 v0 = np.array([v0[1], v0[0]])
-                marked_pixels_new.append((pixel + v0, color_point))
+                point_to_add = pixel + v0
+                if point_to_add[0] < self._current_frame.shape[0] and point_to_add[1] < self._current_frame.shape[1]:
+                    marked_pixels_new.append((point_to_add, color_point))
 
-            for (pixel, color) in marked_pixels_new:
+            for pixel, color in marked_pixels_new:
                 frame_width = self.__get_frame_shape()[1]
                 frame_height = self.__get_frame_shape()[0]
                 if 0 <= pixel[0] < frame_height and 0 <= pixel[1] < frame_width:

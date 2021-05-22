@@ -1,19 +1,23 @@
 import tkinter as tk
 from tkinter import ttk
+
+import mock
+import numpy as np
 from PIL import Image, ImageTk
 
+from colorized_image_subject import ColorizedImageSubject
 from draw_behaviour import DrawBehaviour
 from gui_toolkit import create_info_window
-from image_processing_toolkit import bgr_to_rgb, read_image, bgr_matrix_to_image, browse_for_video
+from image_colorizer_multiprocess import ImageColorizerMultiprocess
+from image_processing_toolkit import bgr_to_rgb, read_image, bgr_matrix_to_image, browse_for_video, browse_for_image
 from pencil_config import PencilConfig
 from pencil_config_observer import PencilConfigObserver
-from colorized_image_subject import ColorizedImageSubject
-from image_colorizer_multiprocess import ImageColorizerMultiprocess
 from py.colorization_process_subject import ColorizationProcessSubject
+from py.line_drawing_command import LineDrawingCommand
 from singleton_config import SingletonConfig
+from update_behaviour import UpdateBehaviour
 from video_optimization_colorizer import VideoOptimizationColorizer
 from video_transfer_colorizer import VideoTransferColorizer
-from update_behaviour import UpdateBehaviour
 
 
 class VideoDrawingCanvas(ttk.Frame):
@@ -22,14 +26,72 @@ class VideoDrawingCanvas(ttk.Frame):
         self._raw_image = None
         self._image = None
         self._video_colorizer = None
+        self._video_filename = None
+        self._ct_image_ref = None
+        self._state = dict()
+        self._state['stop'] = []
         self._colorization_process_subject = ColorizationProcessSubject()
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
         self.__show_default_image()
-        self.__bind_mouse_events_for_load_image()
+        self.__bind_mouse_events_for_load_video()
         self.__init_colorized_image_subject()
         self._colorization_process_subject.notify(start=False)
+
+    def restore_state(self, data):
+        colorization_algorithm = SingletonConfig().colorization_algorithm
+        if colorization_algorithm == 'CUO':
+            self._restore_state_cuo(data)
+        else:
+            self._restore_state_ct(data)
+
+    def _restore_state_ct(self, data):
+        self._video_filename = data['bw']
+        self._ct_image_ref = data['ref']
+
+        window = create_info_window("Performing colorization. Please wait...")
+        self._colorize_ct()
+        window.destroy()
+
+    def _restore_state_cuo(self, data):
+        self._video_filename = data['bw']
+        self._video_colorizer = VideoOptimizationColorizer(self.__colorized_image_subject, self._video_filename)
+        first_frame = self._video_colorizer.get_frame_to_colorize()
+
+        self.__init_bw_matrix(first_frame)
+        self.__init_pencil_config()
+        self.__init_draw_behaviour()
+        self.__init_update_behaviour()
+        self.__bind_mouse_events()
+        self.display(bgr_to_rgb(self.__matrix))
+        self.__push_bw_image()
+        self._colorization_process_subject.notify(start=True)
+
+        json_hints = data['hints']
+        stops = np.array(data['stop'])
+        counter = 0
+        for hint in json_hints:
+            hint_command = LineDrawingCommand.from_json(self._canvas, hint)
+            hint_command.execute()
+            self.__draw_behaviour.executed_commands.append(hint_command)
+            obj = mock.Mock()
+            obj.x = hint['start'][0]
+            obj.y = hint['start'][1]
+            self.__update_behaviour.on_click(obj)
+            obj.x = hint['stop'][0]
+            obj.y = hint['stop'][1]
+            self.__update_behaviour.on_click(obj)
+            counter += 1
+            if counter in stops:
+                window = create_info_window("Performing colorization. Please wait...")
+                self._colorize_cuo()
+                window.destroy()
+
+    def save_state(self):
+        if SingletonConfig().colorization_algorithm == 'CUO':
+            self._state['hints'] = self.__draw_behaviour.save_state()
+        return self._state
 
     def force_save_video(self):
         self._video_colorizer.force_save()
@@ -44,21 +106,35 @@ class VideoDrawingCanvas(ttk.Frame):
         window = create_info_window("Performing colorization. Please wait...")
         colorization_algorithm = SingletonConfig().colorization_algorithm
         if colorization_algorithm == 'CUO':
-            color = self.__get_scribbles_matrix()
-            self._video_colorizer.colorize_video(color)
-            first_frame = self._video_colorizer.get_frame_to_colorize()
-
-            self.__init_bw_matrix(first_frame)
-            self.display(bgr_to_rgb(self.__matrix))
-            self.__push_bw_image()
+            self._state['stop'].append(len(self.__draw_behaviour.executed_commands))
+            self._colorize_cuo()
         else:
-            bw, color = self.__get_colorization_input()
-            colorizer = ImageColorizerMultiprocess(bw, color)
-            result = colorizer.colorize()
-            result = bgr_matrix_to_image(result)
-            self._video_colorizer.colorize_video(result)
+            self._colorize_ct()
 
         window.destroy()
+
+    def _colorize_ct(self):
+        self._video_colorizer = VideoTransferColorizer(self.__colorized_image_subject, self._video_filename)
+        first_frame = self._video_colorizer.get_first_frame()
+        self.__init_bw_matrix(first_frame)
+        self.display(bgr_to_rgb(self.__matrix))
+        self.__push_bw_image()
+
+        image = read_image(self._ct_image_ref)
+        self.display(bgr_to_rgb(image))
+        self.update()
+        self._colorization_process_subject.notify(start=True)
+
+        self._video_colorizer.colorize_video(read_image(self._ct_image_ref))
+
+    def _colorize_cuo(self):
+        color = self.__get_scribbles_matrix()
+        self._video_colorizer.colorize_video(color)
+        first_frame = self._video_colorizer.get_frame_to_colorize()
+
+        self.__init_bw_matrix(first_frame)
+        self.display(bgr_to_rgb(self.__matrix))
+        self.__push_bw_image()
 
     def display(self, matrix):
         self._raw_image = ImageTk.PhotoImage(image=Image.fromarray(matrix))
@@ -128,28 +204,45 @@ class VideoDrawingCanvas(ttk.Frame):
         self._canvas.bind("<Button-1>", self.on_mouse_click)
         self._canvas.bind('<ButtonRelease-1>', self.on_mouse_release)
 
-    def __bind_mouse_events_for_load_image(self):
-        self._canvas.bind("<Button-1>", self.__load_image)
+    def __bind_mouse_events_for_load_video(self):
+        self._canvas.bind("<Button-1>", self.__load_video)
 
-    def __load_image(self, e):
-        video_filename = browse_for_video()
-        if video_filename is not None:
+    def __load_video(self, e):
+        self._video_filename = browse_for_video()
+        if self._video_filename is not None:
             colorization_algorithm = SingletonConfig().colorization_algorithm
-
+            self._state['bw'] = self._video_filename
             if colorization_algorithm == 'CUO':
-                self._video_colorizer = VideoOptimizationColorizer(self.__colorized_image_subject, video_filename)
+                self._video_colorizer = VideoOptimizationColorizer(self.__colorized_image_subject, self._video_filename)
                 first_frame = self._video_colorizer.get_frame_to_colorize()
+                self.__init_bw_matrix(first_frame)
+                self.__init_pencil_config()
+                self.__init_draw_behaviour()
+                self.__init_update_behaviour()
+                self.__bind_mouse_events()
+                self.display(bgr_to_rgb(self.__matrix))
+                self.__push_bw_image()
+                self._colorization_process_subject.notify(start=True)
             else:
-                self._video_colorizer = VideoTransferColorizer(self.__colorized_image_subject, video_filename)
-                first_frame = self._video_colorizer.get_first_frame()
 
-            self.__init_bw_matrix(first_frame)
-            self.__init_pencil_config()
-            self.__init_draw_behaviour()
-            self.__init_update_behaviour()
-            self.__bind_mouse_events()
-            self.display(bgr_to_rgb(self.__matrix))
-            self.__push_bw_image()
+                self._ct_image_ref = browse_for_image('Select reference image')
+                self._state['ref'] = self._ct_image_ref
+                if self._ct_image_ref is not None:
+                    self._video_colorizer = VideoTransferColorizer(self.__colorized_image_subject, self._video_filename)
+                    first_frame = self._video_colorizer.get_first_frame()
+                    self.__init_bw_matrix(first_frame)
+                    self.display(bgr_to_rgb(self.__matrix))
+                    self.__push_bw_image()
+
+                    image = read_image(self._ct_image_ref)
+                    self.display(bgr_to_rgb(image))
+                    self.update()
+
+                else:
+                    self.__colorized_image_subject.notify(reset=True)
+                    self.__show_default_image()
+                    return
+
             self._colorization_process_subject.notify(start=True)
 
     def __init_bw_matrix(self, matrix):

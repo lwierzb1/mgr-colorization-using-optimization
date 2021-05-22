@@ -16,6 +16,7 @@ class DisplayCanvas(ttk.Frame, Observer):
         self._raw_image = None
         self._image = None
         self._image_array = None
+        self._canvas = None
         self.__show_default_image()
 
     def update_color(self, bw, marked):
@@ -39,7 +40,8 @@ class DisplayCanvas(ttk.Frame, Observer):
 
     def __show_default_image(self):
         matrix = read_image('../assets/info_idle.bmp')
-        self.__init_canvas(matrix)
+        if self._canvas is None:
+            self.__init_canvas(matrix)
         self.display(matrix)
 
     def update_subject(self, **kwargs):
@@ -48,9 +50,12 @@ class DisplayCanvas(ttk.Frame, Observer):
         result = kwargs.get('result')
         fill = kwargs.get('fill')
         reference = kwargs.get('reference')
+        reset = kwargs.get('reset')
 
-        height = result.shape[0]
-        width = result.shape[1]
+        if reset is True:
+            self.__show_default_image()
+            return
+
         if fill is True:
             self.display(result)
             self._canvas.config(height=result.shape[0])
@@ -61,6 +66,8 @@ class DisplayCanvas(ttk.Frame, Observer):
             if needs_gray_detector:
                 result = self.__remove_grayscale_pixels_before_merge(result, x_start, y_start)
 
+            height = result.shape[0]
+            width = result.shape[1]
             self._image_array[y_start:y_start + height, x_start:x_start + width] = result
             self.display(self._image_array)
 

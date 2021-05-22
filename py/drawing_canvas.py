@@ -14,7 +14,7 @@ from line_drawing_command import LineDrawingCommand
 from pencil_config import PencilConfig
 from pencil_config_observer import PencilConfigObserver
 from py.color_transfer import ColorTransfer
-from py.singleton_config import SingletonConfig
+from singleton_config import SingletonConfig
 from update_behaviour import UpdateBehaviour
 
 
@@ -25,6 +25,7 @@ class DrawingCanvas(ttk.Frame):
         self._image = None
         self._image_path = None
         self._in_restore = False
+        self._canvas = None
         self._state = dict()
         self._state['stop'] = []
 
@@ -172,7 +173,7 @@ class DrawingCanvas(ttk.Frame):
     def __load_image(self, e):
         colorization_algorithm = SingletonConfig().colorization_algorithm
         if colorization_algorithm == 'CUO':
-            self._image_path = browse_for_image()
+            self._image_path = browse_for_image('Select image to colorize')
             self._state['bw'] = self._image_path
             if self._image_path is not None:
                 image = read_image(self._image_path)
@@ -183,25 +184,36 @@ class DrawingCanvas(ttk.Frame):
                 self.__bind_mouse_events()
                 self.display(bgr_to_rgb(self.__matrix))
                 self.__push_bw_image()
-                self._colorization_process_subject.notify(start=True)
+            else:
+                self.__show_default_image()
+                return
         else:
-            self._image_path = browse_for_image()
+            self._image_path = browse_for_image('Select image to colorize')
             self._state['bw'] = self._image_path
             if self._image_path is not None:
                 image = read_image(self._image_path)
                 self.__init_bw_matrix(image)
                 self.display(bgr_to_rgb(self.__matrix))
                 self.__push_bw_image()
+            else:
+                self.__show_default_image()
+                return
 
-            self._image_path = browse_for_image()
+            self._image_path = browse_for_image('Select reference image')
             self._state['ref'] = self._image_path
             if self._image_path is not None:
                 image = read_image(self._image_path)
                 self.__init_bw_matrix(image)
                 self.display(bgr_to_rgb(self.__matrix))
                 self.update()
+            else:
+                self.__colorized_image_subject.notify(reset=True)
+                self.__show_default_image()
+                return
 
             self.__colorize_ct(read_image(self._state['ref']), read_image(self._state['bw']))
+
+        self._colorization_process_subject.notify(start=True)
 
     def __colorize_ct(self, ref, bw):
         colorizer = ColorTransfer()
@@ -218,7 +230,8 @@ class DrawingCanvas(ttk.Frame):
 
     def __show_default_image(self):
         matrix = read_image('../assets/info_load.bmp')
-        self.__init_canvas(matrix)
+        if self._canvas is None:
+            self.__init_canvas(matrix)
         self.__init_bw_matrix(matrix)
         self.display(matrix)
 

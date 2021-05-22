@@ -159,14 +159,15 @@ def init_display_canvas_for_video(root_node):
 
 def init_buttons_for_video(root_node, drawing_canvas, display_canvas):
     buttons_frame = ttk.Frame(root_node)
-    save_result_button = StyledObserverButton(buttons_frame, text='PERFORM COLORIZE', style='AccentButton',
-                                              command=lambda: drawing_canvas.go_next(), state=tk.DISABLED)
-    reset_button = StyledObserverButton(buttons_frame, text='SAVE RESULT', style='AccentButton',
-                                        command=lambda: save_result_video(drawing_canvas),
+    colorize_button = StyledObserverButton(buttons_frame, text='PERFORM COLORIZE', style='AccentButton',
+                                           command=lambda: drawing_canvas.go_next(), state=tk.DISABLED)
+    save_result_button = StyledObserverButton(buttons_frame, text='SAVE RESULT', style='AccentButton',
+                                              command=lambda: save_result_video(drawing_canvas), state=tk.DISABLED)
+    reset_button = StyledObserverButton(buttons_frame, text='RESET', style='AccentButton',
+                                        command=lambda: reset_ui_video(root_node, drawing_canvas, display_canvas),
                                         state=tk.DISABLED)
-    save_state_button = StyledObserverButton(buttons_frame, text='RESET', style='AccentButton',
-                                             command=lambda: reset_ui_video(root_node, drawing_canvas, display_canvas),
-                                             state=tk.DISABLED)
+    save_state_button = StyledObserverButton(buttons_frame, text='SAVE STATE', style='AccentButton',
+                                             command=lambda: save_state(drawing_canvas))
     restore_state_button = StyledObserverButton(buttons_frame, text='RESTORE STATE', style='AccentButton',
                                                 command=lambda: restore_state(drawing_canvas, display_canvas))
     config_button = StyledObserverButton(buttons_frame, text='PICK CONFIG', style='AccentButton',
@@ -174,6 +175,7 @@ def init_buttons_for_video(root_node, drawing_canvas, display_canvas):
     about_button = StyledObserverButton(buttons_frame, text='ABOUT', style='AccentButton',
                                         command=lambda: show_about())
 
+    colorize_button.pack(fill=tk.BOTH, pady=10)
     save_result_button.pack(fill=tk.BOTH, pady=10)
     reset_button.pack(fill=tk.BOTH, pady=10)
     save_state_button.pack(fill=tk.BOTH, pady=10)
@@ -181,10 +183,11 @@ def init_buttons_for_video(root_node, drawing_canvas, display_canvas):
     config_button.pack(fill=tk.BOTH, pady=10)
     about_button.pack(fill=tk.BOTH, pady=10)
 
+    drawing_canvas.add_colorization_process_observer(colorize_button)
     drawing_canvas.add_colorization_process_observer(save_result_button)
     drawing_canvas.add_colorization_process_observer(reset_button)
     drawing_canvas.add_colorization_process_observer(save_state_button)
-    drawing_canvas.add_colorization_process_observer(save_result_button)
+    drawing_canvas.add_colorization_process_observer(restore_state_button)
 
     buttons_frame.grid(row=0, column=2)
 

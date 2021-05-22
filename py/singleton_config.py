@@ -65,6 +65,9 @@ class SingletonConfig(metaclass=SingletonMeta):
         if self.processes is None:
             self.processes = 1
 
+    def set(self):
+        self.mode = 'a'
+
     def save_state(self):
         state_value = dict()
         state_value['mode'] = self.mode
