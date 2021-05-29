@@ -1,7 +1,7 @@
 import cv2
 
 from color_transfer import ColorTransfer
-from py.image_processing_toolkit import bgr_to_rgb
+from image_processing_toolkit import bgr_to_rgb
 
 
 class VideoTransferColorizer:

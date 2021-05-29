@@ -8,12 +8,11 @@ from PIL import Image, ImageTk
 from colorized_image_subject import ColorizedImageSubject
 from draw_behaviour import DrawBehaviour
 from gui_toolkit import create_info_window
-from image_colorizer_multiprocess import ImageColorizerMultiprocess
 from image_processing_toolkit import bgr_to_rgb, read_image, bgr_matrix_to_image, browse_for_video, browse_for_image
 from pencil_config import PencilConfig
 from pencil_config_observer import PencilConfigObserver
-from py.colorization_process_subject import ColorizationProcessSubject
-from py.line_drawing_command import LineDrawingCommand
+from colorization_process_subject import ColorizationProcessSubject
+from line_drawing_command import LineDrawingCommand
 from singleton_config import SingletonConfig
 from update_behaviour import UpdateBehaviour
 from video_optimization_colorizer import VideoOptimizationColorizer
@@ -175,10 +174,18 @@ class VideoDrawingCanvas(ttk.Frame):
         return self.__matrix, self.__get_scribbles_matrix()
 
     def __get_scribbles_matrix(self):
+        index = self.__get_first_command_index()
         scribbles_matrix = self.__matrix.copy()
-        for command in self.__draw_behaviour.executed_commands:
+        for command in self.__draw_behaviour.executed_commands[index:]:
             command.execute_on_matrix(scribbles_matrix)
         return scribbles_matrix
+
+    def __get_first_command_index(self):
+        stops = self._state['stop']
+        if stops is None or len(stops) == 1:
+            return 0
+        else:
+            return stops[-2]
 
     def __init_canvas(self, input_matrix):
         self._image = None

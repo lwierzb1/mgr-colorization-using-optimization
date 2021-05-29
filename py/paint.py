@@ -1,18 +1,19 @@
 import json
-import tkinter as tk
-from tkinter import messagebox, filedialog
-from tkinter import ttk
 import os
+import tkinter as tk
+from tkinter import filedialog
+from tkinter import ttk
 from tkinter.filedialog import askopenfile
 
+from config_picker import ConfigPicker
 from display_canvas import DisplayCanvas
 from drawing_canvas import DrawingCanvas
 from image_processing_toolkit import bgr_to_rgb, write_image
-from config_picker import ConfigPicker
+from gui_toolkit import create_info_confirm_window
+from singleton_config import SingletonConfig
 from styled_observer_button import StyledObserverButton
 from video_display_canvas import VideoDisplayCanvas
 from video_drawing_canvas import VideoDrawingCanvas
-from singleton_config import SingletonConfig
 
 
 def init_ui(root_node):
@@ -29,6 +30,7 @@ def init_ui(root_node):
         display = init_display_canvas_for_video(root_node)
         drawing.add_observer(display)
         init_buttons_for_video(root_node, drawing, display)
+    return drawing, display
 
 
 def reset_ui_image(root_node, drawing_canvas, display_canvas):
@@ -59,18 +61,18 @@ def init_buttons_for_image(root_node, drawing_canvas, display_canvas):
     save_state_button = StyledObserverButton(buttons_frame, text='SAVE STATE', style='AccentButton',
                                              command=lambda: save_state(drawing_canvas), state=tk.DISABLED)
     restore_state_button = StyledObserverButton(buttons_frame, text='RESTORE STATE', style='AccentButton',
-                                                command=lambda: restore_state(drawing_canvas, display_canvas))
+                                                command=lambda: restore_state())
     config_button = StyledObserverButton(buttons_frame, text='PICK CONFIG', style='AccentButton',
                                          command=lambda: pick_config())
     about_button = StyledObserverButton(buttons_frame, text='ABOUT', style='AccentButton',
                                         command=lambda: show_about())
 
-    save_result_button.pack(fill=tk.BOTH, pady=10)
-    reset_button.pack(fill=tk.BOTH, pady=10)
-    save_state_button.pack(fill=tk.BOTH, pady=10)
-    restore_state_button.pack(fill=tk.BOTH, pady=10)
-    config_button.pack(fill=tk.BOTH, pady=10)
-    about_button.pack(fill=tk.BOTH, pady=10)
+    save_result_button.pack(fill=tk.BOTH, pady=10, ipady=10, ipadx=10)
+    reset_button.pack(fill=tk.BOTH, pady=10, ipady=10, ipadx=10)
+    save_state_button.pack(fill=tk.BOTH, pady=10, ipady=10, ipadx=10)
+    restore_state_button.pack(fill=tk.BOTH, pady=10, ipady=10, ipadx=10)
+    config_button.pack(fill=tk.BOTH, pady=10, ipady=10, ipadx=10)
+    about_button.pack(fill=tk.BOTH, pady=10, ipady=10, ipadx=10)
 
     drawing_canvas.add_colorization_process_observer(save_result_button)
     drawing_canvas.add_colorization_process_observer(reset_button)
@@ -81,27 +83,34 @@ def init_buttons_for_image(root_node, drawing_canvas, display_canvas):
 
 
 def pick_config():
-    window = tk.Toplevel()
+    window = tk.Toplevel(root)
     ConfigPicker(window, callback)
+    window.attributes('-topmost', 'true')
+    window.update_idletasks()
+    screen_width = window.winfo_screenwidth()
+    screen_height = window.winfo_screenheight()
+
+    size = tuple(int(_) for _ in window.geometry().split('+')[0].split('x'))
+    x = screen_width / 2 - size[0] / 2
+    y = screen_height / 2 - size[1] / 2
+
+    window.geometry("+%d+%d" % (x, y))
 
 
 def save_result(display_canvas: DisplayCanvas):
     bgr_matrix = display_canvas.get_result()
     rgb_image = bgr_to_rgb(bgr_matrix)
     write_image(rgb_image, 'result.bmp')
-    messagebox.showinfo("Colorization Program",
-                        "Result image saved as " + get_working_directory() + "/result.bmp.")
+    create_info_confirm_window("Result image saved as " + get_working_directory() + "/result.bmp.")
 
 
 def save_result_video(drawing_canvas: VideoDrawingCanvas):
     drawing_canvas.force_save_video()
-    messagebox.showinfo("Colorization Program",
-                        "Result video saved as " + get_working_directory() + "/result.avi.")
+    create_info_confirm_window("Result video saved as " + get_working_directory() + "/result.avi.")
 
 
 def show_about():
-    messagebox.showinfo("Colorization Program",
-                        "Master Thesis Colorization Program.\nAuthor: Łukasz Wierzbicki, 277446.")
+    create_info_confirm_window('Master Thesis Colorization Program.\nAuthor: Łukasz Wierzbicki, 277446.')
 
 
 def save_state(drawing):
@@ -117,11 +126,13 @@ def save_state(drawing):
         file.close()
 
 
-def restore_state(drawing, display):
+def restore_state():
     file = askopenfile(mode='r', filetypes=[('JSON files', '*.json')])
     if file is not None:
         data = json.load(file)
         SingletonConfig().restore_state(data)
+        drawing, _ = init_ui(root)
+
         drawing.restore_state(data)
 
 
@@ -169,19 +180,19 @@ def init_buttons_for_video(root_node, drawing_canvas, display_canvas):
     save_state_button = StyledObserverButton(buttons_frame, text='SAVE STATE', style='AccentButton',
                                              command=lambda: save_state(drawing_canvas))
     restore_state_button = StyledObserverButton(buttons_frame, text='RESTORE STATE', style='AccentButton',
-                                                command=lambda: restore_state(drawing_canvas, display_canvas))
+                                                command=lambda: restore_state())
     config_button = StyledObserverButton(buttons_frame, text='PICK CONFIG', style='AccentButton',
                                          command=lambda: pick_config())
     about_button = StyledObserverButton(buttons_frame, text='ABOUT', style='AccentButton',
                                         command=lambda: show_about())
 
-    colorize_button.pack(fill=tk.BOTH, pady=10)
-    save_result_button.pack(fill=tk.BOTH, pady=10)
-    reset_button.pack(fill=tk.BOTH, pady=10)
-    save_state_button.pack(fill=tk.BOTH, pady=10)
-    restore_state_button.pack(fill=tk.BOTH, pady=10)
-    config_button.pack(fill=tk.BOTH, pady=10)
-    about_button.pack(fill=tk.BOTH, pady=10)
+    colorize_button.pack(fill=tk.BOTH, pady=10, ipady=10, ipadx=10)
+    save_result_button.pack(fill=tk.BOTH, pady=10, ipady=10, ipadx=10)
+    reset_button.pack(fill=tk.BOTH, pady=10, ipady=10, ipadx=10)
+    save_state_button.pack(fill=tk.BOTH, pady=10, ipady=10, ipadx=10)
+    restore_state_button.pack(fill=tk.BOTH, pady=10, ipady=10, ipadx=10)
+    config_button.pack(fill=tk.BOTH, pady=10, ipady=10, ipadx=10)
+    about_button.pack(fill=tk.BOTH, pady=10, ipady=10, ipadx=10)
 
     drawing_canvas.add_colorization_process_observer(colorize_button)
     drawing_canvas.add_colorization_process_observer(save_result_button)
@@ -203,18 +214,51 @@ def callback(conf):
     SingletonConfig().processes = conf['processes']
     SingletonConfig().max_video_frames_per_section = conf['max_video_frames_per_section']
     SingletonConfig().jacobi_approximation = conf['jacobi_approximation']
+    SingletonConfig().k_means = conf['k_means']
     init_ui(root)
-    root.state('zoomed')
 
 
-if __name__ == '__main__':
-    root = tk.Tk()
+def init_click_for_config():
+    buttons_frame = ttk.Frame(root)
+    restore_state_button = StyledObserverButton(buttons_frame, text='RESTORE STATE', style='AccentButton',
+                                                command=lambda: restore_state())
+    config_button = StyledObserverButton(buttons_frame, text='PICK CONFIG', style='AccentButton',
+                                         command=lambda: pick_config())
+    about_button = StyledObserverButton(buttons_frame, text='ABOUT', style='AccentButton',
+                                        command=lambda: show_about())
+
+    restore_state_button.pack(fill=tk.BOTH, pady=10, ipady=10, ipadx=10)
+    config_button.pack(fill=tk.BOTH, pady=10, ipady=10, ipadx=10)
+    about_button.pack(fill=tk.BOTH, pady=10, ipady=10, ipadx=10)
+    buttons_frame.grid(row=0, column=0, columnspan=3, rowspan=2)
+
+
+def prepare_style():
     style = ttk.Style(root)
     root.tk.call('source', 'style/azure.tcl')
     style.theme_use('azure')
 
+    root.iconphoto(True, tk.PhotoImage(file='../assets/icon.png'))
+
     root.title('Colorization Program')
     root.style = ttk.Style(root)
+
+    root.style.configure("AccentButton", font=('calibri', 18))
+    root.style.configure("BW.TLabel", foreground="#000000", background="#ffffff")
+    root.style.configure('TEntry', foreground='#000000')
+    root.style.configure('TCombobox', foreground='#000000')
+
+    root.option_add("*TCombobox*background", "#ffffff")
+    root.option_add("*TCombobox*foreground", "#000000")
+    root.option_add("*TCombobox*font", "calibri 18")
+    root.option_add("*TCombobox*selectBackground", "#bebebe")
+    root.option_add("*TCombobox*selectBackground", "#bebebe")
+
+    root.option_add("*TLabel*font", "calibri 18")
+
+    root.option_add("*TEntry*font", "calibri 18")
+    root.option_add("*TEntry*background", "#ffffff")
+    root.option_add("*TEntry*foreground", "#000000")
 
     root.grid_columnconfigure(0, weight=1)
     root.grid_columnconfigure(1, weight=1)
@@ -223,7 +267,11 @@ if __name__ == '__main__':
     root.grid_columnconfigure(0, weight=40)
     root.grid_columnconfigure(1, weight=40)
     root.grid_columnconfigure(2, weight=20)
-    root.wm_state('iconic')
+    root.state('zoomed')
 
-    pick_config()
+
+if __name__ == '__main__':
+    root = tk.Tk()
+    prepare_style()
+    init_click_for_config()
     root.mainloop()

@@ -6,13 +6,13 @@
 
 # Minimalne wymagania systemowe do uruchomienia aplikacji:
 
+- python w wersji 3+
 - pipenv
-- icc-rt
 
 # Proces uruchamiania aplikacji
 
 ```
-python3 -m pipenv install
-python3 -m pipenv shell
-python3 main.py --input ../test/example.bmp --marked ../test/example_marked.bmp --store result.bmp
+pipenv install
+pipenv shell
+python3 paint.py
 ```

@@ -6,6 +6,8 @@ import cv2
 import numpy as np
 import color_conv
 from tkinter import filedialog
+import pathlib
+import imageio
 
 __author__ = "Lukasz Wierzbicki"
 __version__ = "1.0.0"
@@ -22,7 +24,7 @@ def write_image(image, path):
 
 
 def read_image(path):
-    return cv2.imread(path)
+    return rgb_to_bgr(imageio.imread(path))
 
 
 def bgr_as_float_matrix(bgr):
@@ -99,3 +101,7 @@ def browse_for_video():
 
 def bgr_to_rgb(matrix):
     return cv2.cvtColor(matrix, cv2.COLOR_BGR2RGB)
+
+
+def rgb_to_bgr(matrix):
+    return cv2.cvtColor(matrix, cv2.COLOR_RGB2BGR)

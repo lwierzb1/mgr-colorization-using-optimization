@@ -1,4 +1,4 @@
-from py.subject import Subject
+from subject import Subject
 
 
 class ColorizationProcessSubject(Subject):

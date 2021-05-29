@@ -1,8 +1,9 @@
 #!/usr/bin/env python
 from abc import ABC
+
 import cv2
+
 from colorization_solver import ColorizationSolver
-from matplotlib import pyplot as plt
 
 __author__ = "Lukasz Wierzbicki"
 __version__ = "1.0.0"

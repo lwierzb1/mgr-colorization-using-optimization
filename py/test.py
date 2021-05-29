@@ -73,11 +73,11 @@ if __name__ == '__main__':
 
     # for i in range(1, 11):
     #     t = time.time()
-    #     a1 = 'D:/studia/mgr/sources/mgr-colorization-using-optimization/test_hd/' + str(i) + '_bw.bmp'
-    #     a2 = 'D:/studia/mgr/sources/mgr-colorization-using-optimization/test_hd/' + str(i) + '_result.bmp'
+    a1 = 'D:/studia/mgr/sources/mgr-colorization-using-optimization/test_hd/5_bw.bmp'
+    a2 = 'D:/studia/mgr/sources/mgr-colorization-using-optimization/test_hd/5_result.bmp'
     #
-    #     c = ColorTransfer()
-    #     res = c.transfer(cv2.imread(a2), cv2.imread(a1))
+    c = ColorTransfer()
+    res = c.transfer(cv2.imread(a2), cv2.imread(a1))
     #     cv2.imwrite(str(i) + '__transfer.bmp', res)
     #     stop = time.time()
     #     print('[]' + '(' + str(i) + ')', stop - t)
@@ -86,7 +86,7 @@ if __name__ == '__main__':
     # v.colorize_video(marked_name)
 
     v = VideoTransferColorizer(None, grey_name)
-    v.colorize_video(cv2.imread(marked_name))
+    v.colorize_video(cv2.imread(a2))
 
     # grey_name = "bizbw.mp4"  # BW video
     # marked_name = "bizmarked00.bmp"  # BW image with color markings. Only use BMP

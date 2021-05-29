@@ -11,6 +11,10 @@ class PencilWidthPicker(ttk.Frame):
         self.__create_pencil_width_example_display()
         self.__init_pencil_config_subject(config_subject)
 
+    def apply(self, width):
+        self.__update_pencil_width(width)
+        self.update()
+
     def add_observer(self, observer):
         self._pencil_config_subject.attach(observer)
 

@@ -5,6 +5,8 @@ import cv2
 import numpy as np
 from numba import jit
 
+from singleton_config import SingletonConfig
+
 
 @jit(parallel=True, nopython=True, fastmath=True, cache=True)
 def _colorize_parallel(gray, gray_std_dev, sample_values, jitter_samples, colored, result):
@@ -38,22 +40,36 @@ class ColorTransfer:
         self._colored = None
         self._gray = None
 
+    def k_mean(self, image):
+        pixel_values = image.reshape((-1, 3))
+        pixel_values = np.float32(pixel_values)
+        criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
+        k = 8
+        _, labels, (centers) = cv2.kmeans(pixel_values, k, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+        centers = np.uint8(centers)
+        return labels, centers
+
     def transfer(self, colored, gray):
+
+        # segmented[color_labels.flatten() == 0] = [0,0,0]
+        # segmented = segmented.reshape(colored.shape)
         self._colored = colored
         factor_row = 1
         factor_col = 1
-        self._colored = cv2.resize(self._colored,
-                                   (factor_row * self._colored.shape[0], factor_col * self._colored.shape[1]))
+        # self._colored = cv2.resize(self._colored,
+        #                            (factor_row * self._colored.shape[0], factor_col * self._colored.shape[1]))
         self._colored = cv2.cvtColor(self._colored, cv2.COLOR_BGR2Lab)
         self._gray = cv2.cvtColor(gray, cv2.COLOR_BGR2GRAY)
 
-        result = self._colorize()
-        # cv2.imshow('', result)
-        # cv2.waitKey(0)
         return result
+        self._colorize()
 
     def _colorize(self):
-        jitter_samples = self._get_jitter_samples(self._colored)
+        if SingletonConfig().k_means:
+            jitter_samples = self._get_k_samples(self._colored)
+        else:
+            jitter_samples = self._get_jitter_samples(self._colored)
+
         ref_std_dev = self._neighbor_std_dev(self._colored)
         gray_std_dev = self._neighbor_std_dev(self._gray)
 
@@ -101,10 +117,34 @@ class ColorTransfer:
         block_size_x = math.floor(img.shape[1] / samples_in_a_row)
 
         jitter_samples = []
+
         for i in range(samples_in_a_col):
             for j in range(samples_in_a_row):
-                rand_x = ((j * block_size_x) + (random.randint(0, block_size_x))) % img.shape[1]
-                rand_y = ((i * block_size_y) + (random.randint(0, block_size_y))) % img.shape[0]
+                # rand_x = ((j * block_size_x) + (random.randint(0, block_size_x))) % img.shape[1]
+                # rand_y = ((i * block_size_y) + (random.randint(0, block_size_y))) % img.shape[0]
+                rand_x = random.randint(0, img.shape[1] - 1)
+                rand_y = random.randint(0, img.shape[0] - 1)
                 jitter_samples.append([rand_x, rand_y])
 
         return jitter_samples
+
+    def _get_k_samples(self, reference_img):
+        samples = []
+        color_labels, color_centers = self.k_mean(reference_img)
+
+        x = reference_img.reshape((-1, 3))
+        for i in range(8):
+            y = x.copy()
+            y[color_labels.flatten() != i] = [0, 0, 0]
+            y = y.reshape(reference_img.shape)
+            sub_samples = self._find_samples(y)
+            for ii in sub_samples:
+                samples.append([ii[1], ii[0]])
+
+        return samples
+
+    @staticmethod
+    def _find_samples(img):
+        no_of_samples = int(img[np.nonzero(np.sum(img, axis=2))].size * 0.25)
+        samples = list(zip(*np.nonzero(np.sum(img, axis=2))))
+        return random.sample(samples, no_of_samples)

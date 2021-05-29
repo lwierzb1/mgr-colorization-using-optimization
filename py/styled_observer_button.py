@@ -1,7 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 
-from py.observer import Observer
+from observer import Observer
 
 
 class StyledObserverButton(ttk.Button, Observer):

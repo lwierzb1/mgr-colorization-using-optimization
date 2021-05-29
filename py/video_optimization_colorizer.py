@@ -52,9 +52,11 @@ class VideoOptimizationColorizer:
     def __continuous_colorization(self):
         marked_pixels_new = []
         while self.__is_video_opened() and self._processed_frames < self._frames_to_process:
-            self.__read_next_video_frame()
+            if self.video_ended:
+                return
+            else:
+                self.__read_next_video_frame()
             current_colored_frame = self._current_frame.copy()
-
             new_points_position, status, err = self.__calculate_optical_flow()
 
             good_new_points = new_points_position[status == 1]

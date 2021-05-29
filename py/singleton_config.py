@@ -29,6 +29,7 @@ class SingletonConfig(metaclass=SingletonMeta):
         self.processes = None
         self.colorization_algorithm = None
         self.max_video_frames_per_section = None
+        self.k_means = None
 
     def _parse_config(self):
         config = configparser.ConfigParser()

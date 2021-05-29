@@ -4,7 +4,6 @@ import time
 import numpy as np
 import scipy.sparse
 import cv2
-import matplotlib.pyplot as plt
 
 from image_processing_toolkit import bgr_to_yuv_channels, yuv_channels_to_bgr_matrix
 from mathematical_toolkit import compute_variance, ensure_is_not_zero
