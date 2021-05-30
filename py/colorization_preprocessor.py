@@ -1,10 +1,13 @@
 import cv2
 import numpy as np
 
+from singleton_config import SingletonConfig
 from update_grid import UpdateGrid
 
 
 def _prepare_data_for_colorization(bw_matrix, colored_matrix, sigma=0.33):
+    if not SingletonConfig().edge_detection:
+        return colored_matrix.copy()
     diff = cv2.cvtColor(bw_matrix, cv2.COLOR_BGR2GRAY) - cv2.cvtColor(colored_matrix, cv2.COLOR_BGR2GRAY)
 
     median = np.median(bw_matrix)
@@ -13,12 +16,6 @@ def _prepare_data_for_colorization(bw_matrix, colored_matrix, sigma=0.33):
     filtered = cv2.bilateralFilter(bw_matrix.copy(), 17, 100, 100)
     edged = cv2.Canny(filtered, lower, upper)
     result = colored_matrix.copy()
-
-    # has_hint = abs(colored_matrix - bw_matrix).sum(2) > 0.001
-    # for y in range(has_hint.shape[0]):
-    #     for x in range(has_hint.shape[1]):
-    #         if has_hint[y, x]:
-    #             result[y, x] = colored_matrix[y, x]
 
     for y in range(edged.shape[0]):
         for x in range(edged.shape[1]):

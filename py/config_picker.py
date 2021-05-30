@@ -19,6 +19,7 @@ class ConfigPicker(ttk.Frame):
         self._init_jacobi_approximation()
         self._init_max_frames_per_section()
         self._apply_k_mean()
+        self._apply_edge_detection()
         self._init_accept_button()
         self.grid(padx=20, pady=20)
         self.pack()
@@ -108,9 +109,19 @@ class ConfigPicker(ttk.Frame):
         check_button = ttk.Checkbutton(self, text='', style='Switch', variable=self._should_apply_k_mean)
         check_button.grid(column=1, row=6, sticky='e', padx=(0, 10))
 
+    def _apply_edge_detection(self):
+        ttk.Label(self, text="Edge detection with Colorization Using Optimization", style="BW.TLabel").grid(column=0,
+                                                                                                            row=7,
+                                                                                                            padx=10,
+                                                                                                            pady=25,
+                                                                                                            sticky='w')
+        self._should_apply_edge_detection = tk.BooleanVar(self, True)
+        check_button = ttk.Checkbutton(self, text='', style='Switch', variable=self._should_apply_edge_detection)
+        check_button.grid(column=1, row=7, sticky='e', padx=(0, 10))
+
     def _init_accept_button(self):
         button = ttk.Button(self, text='ACCEPT', width=40, style='AccentButton', command=lambda: self._save_config())
-        button.grid(row=7, column=0, columnspan=2, pady=10)
+        button.grid(row=8, column=0, columnspan=2, pady=10)
 
     def _save_config(self):
         config = dict()
@@ -120,6 +131,7 @@ class ConfigPicker(ttk.Frame):
         config['max_video_frames_per_section'] = int(self._max_frames_per_section.get())
         config['linear_algorithm'] = self._linear_algorithm.get().lower()
         config['k_means'] = self._should_apply_k_mean.get()
+        config['edge_detection'] = self._should_apply_edge_detection.get()
 
         if "optimization" in self._colorization_algorithm.get().lower():
             config['colorization_algorithm'] = 'CUO'

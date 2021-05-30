@@ -30,6 +30,7 @@ class SingletonConfig(metaclass=SingletonMeta):
         self.colorization_algorithm = None
         self.max_video_frames_per_section = None
         self.k_means = None
+        self.edge_detection = None
 
     def _parse_config(self):
         config = configparser.ConfigParser()
@@ -76,6 +77,8 @@ class SingletonConfig(metaclass=SingletonMeta):
         state_value['colorization_algorithm'] = self.colorization_algorithm
         state_value['max_video_frames_per_section'] = self.max_video_frames_per_section
         state_value['linear_algorithm'] = self.linear_algorithm
+        state_value['k_means'] = self.k_means
+        state_value['edge_detection'] = self.edge_detection
         return state_value
 
     def restore_state(self, data):
@@ -84,3 +87,5 @@ class SingletonConfig(metaclass=SingletonMeta):
         self.colorization_algorithm = data['colorization_algorithm']
         self.linear_algorithm = data['linear_algorithm']
         self.max_video_frames_per_section = data['max_video_frames_per_section']
+        self.k_means = data['k_means']
+        self.edge_detection = data['edge_detection']

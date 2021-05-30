@@ -77,7 +77,8 @@ def init_buttons_for_image(root_node, drawing_canvas, display_canvas):
     drawing_canvas.add_colorization_process_observer(save_result_button)
     drawing_canvas.add_colorization_process_observer(reset_button)
     drawing_canvas.add_colorization_process_observer(save_state_button)
-    drawing_canvas.add_colorization_process_observer(save_result_button)
+    drawing_canvas.add_colorization_process_observer(restore_state_button)
+    drawing_canvas.add_colorization_process_observer(config_button)
 
     buttons_frame.grid(row=0, column=2)
 
@@ -198,6 +199,7 @@ def init_buttons_for_video(root_node, drawing_canvas, display_canvas):
     drawing_canvas.add_colorization_process_observer(save_result_button)
     drawing_canvas.add_colorization_process_observer(reset_button)
     drawing_canvas.add_colorization_process_observer(save_state_button)
+    drawing_canvas.add_colorization_process_observer(config_button)
     drawing_canvas.add_colorization_process_observer(restore_state_button)
 
     buttons_frame.grid(row=0, column=2)
@@ -215,6 +217,7 @@ def callback(conf):
     SingletonConfig().max_video_frames_per_section = conf['max_video_frames_per_section']
     SingletonConfig().jacobi_approximation = conf['jacobi_approximation']
     SingletonConfig().k_means = conf['k_means']
+    SingletonConfig().edge_detection = conf['edge_detection']
     init_ui(root)
 
 

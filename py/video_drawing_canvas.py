@@ -1,3 +1,4 @@
+import time
 import tkinter as tk
 from tkinter import ttk
 
@@ -5,14 +6,15 @@ import mock
 import numpy as np
 from PIL import Image, ImageTk
 
+from colorization_process_subject import ColorizationProcessSubject
 from colorized_image_subject import ColorizedImageSubject
 from draw_behaviour import DrawBehaviour
-from gui_toolkit import create_info_window
+from gui_toolkit import create_info_window, create_info_confirm_window
 from image_processing_toolkit import bgr_to_rgb, read_image, bgr_matrix_to_image, browse_for_video, browse_for_image
+from line_drawing_command import LineDrawingCommand
 from pencil_config import PencilConfig
 from pencil_config_observer import PencilConfigObserver
-from colorization_process_subject import ColorizationProcessSubject
-from line_drawing_command import LineDrawingCommand
+from py.cuo_async_task_video import CUOAsyncTaskVideo
 from singleton_config import SingletonConfig
 from update_behaviour import UpdateBehaviour
 from video_optimization_colorizer import VideoOptimizationColorizer
@@ -27,6 +29,10 @@ class VideoDrawingCanvas(ttk.Frame):
         self._video_colorizer = None
         self._video_filename = None
         self._ct_image_ref = None
+        self._cuo_async_task = None
+        self._waiting_indicate = None
+        self._disable_drawing = False
+        self.__DELAY_TIME = 200
         self._state = dict()
         self._state['stop'] = []
         self._colorization_process_subject = ColorizationProcessSubject()
@@ -69,23 +75,35 @@ class VideoDrawingCanvas(ttk.Frame):
 
         json_hints = data['hints']
         stops = np.array(data['stop'])
+        self._state['stop'] = data['stop']
         counter = 0
         for hint in json_hints:
             hint_command = LineDrawingCommand.from_json(self._canvas, hint)
             hint_command.execute()
             self.__draw_behaviour.executed_commands.append(hint_command)
-            obj = mock.Mock()
-            obj.x = hint['start'][0]
-            obj.y = hint['start'][1]
-            self.__update_behaviour.on_click(obj)
-            obj.x = hint['stop'][0]
-            obj.y = hint['stop'][1]
-            self.__update_behaviour.on_click(obj)
+            self._mock_click(hint)
             counter += 1
             if counter in stops:
-                window = create_info_window("Performing colorization. Please wait...")
-                self._colorize_cuo()
-                window.destroy()
+                self._waiting_indicate = create_info_window("Performing colorization. Please wait...")
+                self._restore_colorize_cuo(counter)
+                while self._disable_drawing:
+                    time.sleep(0.01)
+                    self.update()
+                    self._waiting_indicate.update()
+                self._disable_drawing = True
+                self._colorization_process_subject.notify(start=False)
+        self._disable_drawing = False
+        self._colorization_process_subject.notify(start=True)
+
+    def _mock_click(self, hint):
+        obj = mock.Mock()
+        self._pencil_config.restore(hint)
+        obj.x = hint['start'][0]
+        obj.y = hint['start'][1]
+        self.__update_behaviour.on_click(obj)
+        obj.x = hint['stop'][0]
+        obj.y = hint['stop'][1]
+        self.__update_behaviour.on_click(obj)
 
     def save_state(self):
         if SingletonConfig().colorization_algorithm == 'CUO':
@@ -102,15 +120,13 @@ class VideoDrawingCanvas(ttk.Frame):
         self._colorization_process_subject.attach(observer)
 
     def go_next(self):
-        window = create_info_window("Performing colorization. Please wait...")
+        self._waiting_indicate = create_info_window("Performing colorization. Please wait...")
         colorization_algorithm = SingletonConfig().colorization_algorithm
         if colorization_algorithm == 'CUO':
             self._state['stop'].append(len(self.__draw_behaviour.executed_commands))
             self._colorize_cuo()
         else:
             self._colorize_ct()
-
-        window.destroy()
 
     def _colorize_ct(self):
         self._video_colorizer = VideoTransferColorizer(self.__colorized_image_subject, self._video_filename)
@@ -127,13 +143,42 @@ class VideoDrawingCanvas(ttk.Frame):
         self._video_colorizer.colorize_video(read_image(self._ct_image_ref))
 
     def _colorize_cuo(self):
+        self._disable_drawing = True
+        self._colorization_process_subject.notify(start=False)
         color = self.__get_scribbles_matrix()
-        self._video_colorizer.colorize_video(color)
-        first_frame = self._video_colorizer.get_frame_to_colorize()
+        self._cuo_async_task = CUOAsyncTaskVideo(self._video_colorizer)
+        self._cuo_async_task.run(color)
+        self.after(self.__DELAY_TIME, self._check_for_cuo_result)
 
-        self.__init_bw_matrix(first_frame)
-        self.display(bgr_to_rgb(self.__matrix))
-        self.__push_bw_image()
+    def _restore_colorize_cuo(self, counter):
+        self._disable_drawing = True
+        self._colorization_process_subject.notify(start=False)
+        color = self.__get_scribbles_matrix_restore(counter)
+        self._cuo_async_task = CUOAsyncTaskVideo(self._video_colorizer)
+        self._cuo_async_task.run(color)
+        self.after(self.__DELAY_TIME, self._check_for_cuo_result)
+
+    def _check_for_cuo_result(self):
+        if self._cuo_async_task.finished:
+
+            first_frame = self._video_colorizer.get_frame_to_colorize()
+            if self._video_colorizer.video_ended:
+                create_info_confirm_window("All video frames have been processed")
+                if self._waiting_indicate is not None:
+                    self._waiting_indicate.destroy()
+                    self._disable_drawing = False
+                    self._colorization_process_subject.notify(start=True)
+                    return
+
+            self.__init_bw_matrix(first_frame)
+            self.display(bgr_to_rgb(self.__matrix))
+            self.__push_bw_image()
+
+            self._waiting_indicate.destroy()
+            self._disable_drawing = False
+            self._colorization_process_subject.notify(start=True)
+        else:
+            self.after(self.__DELAY_TIME, self._check_for_cuo_result)
 
     def display(self, matrix):
         self._raw_image = ImageTk.PhotoImage(image=Image.fromarray(matrix))
@@ -148,14 +193,20 @@ class VideoDrawingCanvas(ttk.Frame):
         self.__draw_behaviour.redo_last_command()
 
     def on_mouse_motion(self, e):
+        if self._disable_drawing:
+            return
         self.__draw_behaviour.draw(e)
         self.__update_behaviour.on_motion(e)
 
     def on_mouse_click(self, e):
+        if self._disable_drawing:
+            return
         self.__draw_behaviour.draw_dot(e)
         self.__update_behaviour.on_click(e)
 
     def on_mouse_release(self, e):
+        if self._disable_drawing:
+            return
         self.__draw_behaviour.on_release(e)
         colorization_algorithm = SingletonConfig().colorization_algorithm
         if colorization_algorithm == 'CT':
@@ -177,6 +228,19 @@ class VideoDrawingCanvas(ttk.Frame):
         index = self.__get_first_command_index()
         scribbles_matrix = self.__matrix.copy()
         for command in self.__draw_behaviour.executed_commands[index:]:
+            command.execute_on_matrix(scribbles_matrix)
+        return scribbles_matrix
+
+    def __get_scribbles_matrix_restore(self, counter):
+        stops = self._state['stop']
+        counter_idx = stops.index(counter)
+        end = counter
+        if counter_idx == 0:
+            begin = 0
+        else:
+            begin = stops[counter_idx - 1]
+        scribbles_matrix = self.__matrix.copy()
+        for command in self.__draw_behaviour.executed_commands[begin:end]:
             command.execute_on_matrix(scribbles_matrix)
         return scribbles_matrix
 

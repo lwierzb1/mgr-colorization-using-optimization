@@ -13,6 +13,7 @@ class PencilWidthPicker(ttk.Frame):
 
     def apply(self, width):
         self.__update_pencil_width(width)
+        self._slider.set(width)
         self.update()
 
     def add_observer(self, observer):

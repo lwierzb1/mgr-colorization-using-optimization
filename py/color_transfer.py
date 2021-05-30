@@ -50,9 +50,6 @@ class ColorTransfer:
         return labels, centers
 
     def transfer(self, colored, gray):
-
-        # segmented[color_labels.flatten() == 0] = [0,0,0]
-        # segmented = segmented.reshape(colored.shape)
         self._colored = colored
         factor_row = 1
         factor_col = 1
@@ -61,8 +58,7 @@ class ColorTransfer:
         self._colored = cv2.cvtColor(self._colored, cv2.COLOR_BGR2Lab)
         self._gray = cv2.cvtColor(gray, cv2.COLOR_BGR2GRAY)
 
-        return result
-        self._colorize()
+        return self._colorize()
 
     def _colorize(self):
         if SingletonConfig().k_means:

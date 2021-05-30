@@ -23,6 +23,7 @@ class VideoOptimizationColorizer:
         self._frames_to_process = config.max_video_frames_per_section
         self._video_path = video_path
         self._colorized_image_subject = colorized_image_subject
+        self._cuo_async_task = None
         self.get_frame_to_colorize()
 
     def colorize_video(self, m):
@@ -55,7 +56,10 @@ class VideoOptimizationColorizer:
             if self.video_ended:
                 return
             else:
-                self.__read_next_video_frame()
+                ret = self.__read_next_video_frame()
+                if not ret:
+                    return
+
             current_colored_frame = self._current_frame.copy()
             new_points_position, status, err = self.__calculate_optical_flow()
 
@@ -128,10 +132,13 @@ class VideoOptimizationColorizer:
         self._cap = cv2.VideoCapture(video_path)
 
     def __read_next_video_frame(self):
-        self.__shift_last_frame()
         ret, frame = self._cap.read()
-        self._current_frame = frame
-        self.video_ended = not ret
+        if ret:
+            self.__shift_last_frame()
+            self._current_frame = frame
+            self.video_ended = False
+        else:
+            self.video_ended = True
         return ret
 
     def __shift_last_frame(self):

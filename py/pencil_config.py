@@ -14,8 +14,9 @@ class PencilConfig(ttk.LabelFrame):
         self.__create_pencil_color_chooser()
         self.__create_pencil_width_chooser()
 
-    def apply_width(self, width):
-        self._pencil_width_picker.apply(width)
+    def restore(self, data):
+        self._pencil_width_picker.apply(data['width'])
+        self._color_picker.apply(data['fill'])
 
     def add_observer(self, observer: Observer):
         self._color_picker.add_observer(observer)

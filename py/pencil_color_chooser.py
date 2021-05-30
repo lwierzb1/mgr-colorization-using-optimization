@@ -1,16 +1,26 @@
 import tkinter as tk
-from tkinter import ttk
 from tkinter import colorchooser
+from tkinter import ttk
 
 import consts
+from image_processing_toolkit import hex_to_bgr, bgr_to_rgb
 
 
 class PencilColorChooser(ttk.Frame):
     def __init__(self, master, config_subject, **kw):
         super().__init__(master, **kw)
+        self._color_rgb = None
+        self._color_hex = None
+
         self.__init_colors()
         self.__init_config_subject(config_subject)
         self.__create_color_viewer()
+
+    def apply(self, fill_hex):
+        self._color_hex = fill_hex
+        self._color_rgb = hex_to_bgr(fill_hex)
+        self.__display_current_color()
+        self.update()
 
     def add_observer(self, observer):
         self._pencil_config_subject.attach(observer)

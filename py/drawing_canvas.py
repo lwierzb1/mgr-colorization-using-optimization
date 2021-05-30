@@ -8,13 +8,13 @@ from PIL import Image, ImageTk
 
 from colorization_process_subject import ColorizationProcessSubject
 from colorized_image_subject import ColorizedImageSubject
+from ct_async_task import CTAsyncTask
 from draw_behaviour import DrawBehaviour
 from gui_toolkit import create_info_window
 from image_processing_toolkit import browse_for_image, bgr_to_rgb, read_image, bgr_matrix_to_image
 from line_drawing_command import LineDrawingCommand
 from pencil_config import PencilConfig
 from pencil_config_observer import PencilConfigObserver
-from ct_async_task import CTAsyncTask
 from singleton_config import SingletonConfig
 from update_behaviour import UpdateBehaviour
 
@@ -43,6 +43,7 @@ class DrawingCanvas(ttk.Frame):
         self._colorization_process_subject.notify(start=False)
 
     def restore_state(self, data):
+        self._colorization_process_subject.notify(start=False)
         colorization_algorithm = SingletonConfig().colorization_algorithm
         if colorization_algorithm == 'CUO':
             self._restore_state_cuo(data)
@@ -89,13 +90,16 @@ class DrawingCanvas(ttk.Frame):
                     time.sleep(0.01)
                     self.update()
                     self._waiting_indicate.update()
+                self._disable_drawing = True
+                self._colorization_process_subject.notify(start=False)
         self._state['bw'] = data['bw']
         self._state['stop'] = data['stop']
+        self._colorization_process_subject.notify(start=True)
+        self._disable_drawing = False
 
     def _mock_click(self, hint):
         obj = mock.Mock()
-        width = hint['width']
-        self._pencil_config.apply_width(width)
+        self._pencil_config.restore(hint)
         obj.x = hint['start'][0]
         obj.y = hint['start'][1]
         self.__update_behaviour.on_click(obj)
