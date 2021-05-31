@@ -105,7 +105,7 @@ class ConfigPicker(ttk.Frame):
                                                                                                            padx=10,
                                                                                                            pady=25,
                                                                                                            sticky='w')
-        self._should_apply_k_mean = tk.BooleanVar(self, False)
+        self._should_apply_k_mean = tk.BooleanVar(self, True)
         check_button = ttk.Checkbutton(self, text='', style='Switch', variable=self._should_apply_k_mean)
         check_button.grid(column=1, row=6, sticky='e', padx=(0, 10))
 

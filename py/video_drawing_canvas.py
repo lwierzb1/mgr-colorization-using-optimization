@@ -8,13 +8,14 @@ from PIL import Image, ImageTk
 
 from colorization_process_subject import ColorizationProcessSubject
 from colorized_image_subject import ColorizedImageSubject
+from cuo_async_task_video import CUOAsyncTaskVideo
 from draw_behaviour import DrawBehaviour
 from gui_toolkit import create_info_window, create_info_confirm_window
 from image_processing_toolkit import bgr_to_rgb, read_image, bgr_matrix_to_image, browse_for_video, browse_for_image
 from line_drawing_command import LineDrawingCommand
 from pencil_config import PencilConfig
 from pencil_config_observer import PencilConfigObserver
-from py.cuo_async_task_video import CUOAsyncTaskVideo
+from py.ct_async_task_video import CTAsyncTaskVideo
 from singleton_config import SingletonConfig
 from update_behaviour import UpdateBehaviour
 from video_optimization_colorizer import VideoOptimizationColorizer
@@ -138,9 +139,10 @@ class VideoDrawingCanvas(ttk.Frame):
         image = read_image(self._ct_image_ref)
         self.display(bgr_to_rgb(image))
         self.update()
-        self._colorization_process_subject.notify(start=True)
-
-        self._video_colorizer.colorize_video(read_image(self._ct_image_ref))
+        self._colorization_process_subject.notify(start=False)
+        self._cuo_async_task = CTAsyncTaskVideo(self._video_colorizer)
+        self._cuo_async_task.run(self._ct_image_ref)
+        self.after(self.__DELAY_TIME, self._check_for_ct_result)
 
     def _colorize_cuo(self):
         self._disable_drawing = True
@@ -160,7 +162,6 @@ class VideoDrawingCanvas(ttk.Frame):
 
     def _check_for_cuo_result(self):
         if self._cuo_async_task.finished:
-
             first_frame = self._video_colorizer.get_frame_to_colorize()
             if self._video_colorizer.video_ended:
                 create_info_confirm_window("All video frames have been processed")
@@ -179,6 +180,17 @@ class VideoDrawingCanvas(ttk.Frame):
             self._colorization_process_subject.notify(start=True)
         else:
             self.after(self.__DELAY_TIME, self._check_for_cuo_result)
+
+    def _check_for_ct_result(self):
+        if self._cuo_async_task.finished:
+            create_info_confirm_window("All video frames have been processed")
+            if self._waiting_indicate is not None:
+                self._waiting_indicate.destroy()
+                self._disable_drawing = False
+                self._colorization_process_subject.notify(start=True)
+                return
+        else:
+            self.after(self.__DELAY_TIME, self._check_for_ct_result)
 
     def display(self, matrix):
         self._raw_image = ImageTk.PhotoImage(image=Image.fromarray(matrix))

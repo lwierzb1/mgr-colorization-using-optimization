@@ -224,6 +224,9 @@ class DrawingCanvas(ttk.Frame):
         self._canvas.bind("<Button-1>", self.__load_image)
 
     def __load_image(self, e):
+        if self._disable_drawing:
+            return
+
         colorization_algorithm = SingletonConfig().colorization_algorithm
         if colorization_algorithm == 'CUO':
             self._image_path = browse_for_image('Select image to colorize')
@@ -240,6 +243,7 @@ class DrawingCanvas(ttk.Frame):
             else:
                 self.__show_default_image()
                 return
+            self._colorization_process_subject.notify(start=True)
         else:
             self._image_path = browse_for_image('Select image to colorize')
             self._state['bw'] = self._image_path
@@ -263,12 +267,11 @@ class DrawingCanvas(ttk.Frame):
                 self.__colorized_image_subject.notify(reset=True)
                 self.__show_default_image()
                 return
-
             self.__colorize_ct(read_image(self._state['ref']), read_image(self._state['bw']))
 
-        self._colorization_process_subject.notify(start=True)
-
     def __colorize_ct(self, ref, bw):
+        self._colorization_process_subject.notify(start=False)
+        self._disable_drawing = True
         self._waiting_indicate = create_info_window("Performing colorization. Please wait...")
         self._ct_async_task.run(ref, bw)
         self.after(self.__DELAY_TIME, self._check_for_ct_result)
