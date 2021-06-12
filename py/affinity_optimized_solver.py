@@ -1,18 +1,18 @@
+import numba
 import numpy as np
-from numba import jit
 
-from affinity_solver import AffinitySolver
+import affinity_solver
 
 
-class AffinityOptimizedSolver(AffinitySolver):
+class AffinityOptimizedSolver(affinity_solver.AffinitySolver):
     def __init__(self):
-        super(AffinitySolver, self).__init__()
+        super(affinity_solver.AffinitySolver, self).__init__()
 
     def compute_affinity(self, center_y, neighbors):
         return _compute_affinity_optimized(center_y, neighbors)
 
 
-@jit(nopython=True, cache=True, fastmath=True, nogil=True)
+@numba.jit(nopython=True, cache=True, fastmath=True, nogil=True)
 def _compute_affinity_optimized(center_y, neighbors_y):
     diff = neighbors_y - center_y
     variance = np.var((np.append(neighbors_y, center_y)))

@@ -15,7 +15,7 @@ from image_processing_toolkit import bgr_to_rgb, read_image, bgr_matrix_to_image
 from line_drawing_command import LineDrawingCommand
 from pencil_config import PencilConfig
 from pencil_config_observer import PencilConfigObserver
-from py.ct_async_task_video import CTAsyncTaskVideo
+from ct_async_task_video import CTAsyncTaskVideo
 from singleton_config import SingletonConfig
 from update_behaviour import UpdateBehaviour
 from video_optimization_colorizer import VideoOptimizationColorizer
@@ -333,7 +333,7 @@ class VideoDrawingCanvas(ttk.Frame):
         self.__color_matrix = matrix.copy()
 
     def __show_default_image(self):
-        matrix = read_image('../assets/load_video.bmp')
+        matrix = read_image('assets/load_video.bmp')
         self.__init_canvas(matrix)
         self.__init_bw_matrix(matrix)
         self.display(matrix)

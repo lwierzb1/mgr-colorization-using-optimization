@@ -2,21 +2,21 @@ import time
 import tkinter as tk
 from tkinter import ttk
 
+import PIL
 import mock
 import numpy as np
-from PIL import Image, ImageTk
 
-from colorization_process_subject import ColorizationProcessSubject
-from colorized_image_subject import ColorizedImageSubject
-from ct_async_task import CTAsyncTask
-from draw_behaviour import DrawBehaviour
-from gui_toolkit import create_info_window
-from image_processing_toolkit import browse_for_image, bgr_to_rgb, read_image, bgr_matrix_to_image
-from line_drawing_command import LineDrawingCommand
-from pencil_config import PencilConfig
-from pencil_config_observer import PencilConfigObserver
-from singleton_config import SingletonConfig
-from update_behaviour import UpdateBehaviour
+import colorization_process_subject
+import colorized_image_subject
+import ct_async_task
+import draw_behaviour
+import gui_toolkit
+import image_processing_toolkit
+import line_drawing_command
+import pencil_config
+import pencil_config_observer
+import singleton_config
+import update_behaviour
 
 
 class DrawingCanvas(ttk.Frame):
@@ -29,14 +29,14 @@ class DrawingCanvas(ttk.Frame):
         self._canvas = None
         self._waiting_indicate = None
         self._disable_drawing = False
-        self._ct_async_task = CTAsyncTask()
+        self._ct_async_task = ct_async_task.CTAsyncTask()
         self.__DELAY_TIME = 200
         self._state = dict()
         self._state['stop'] = []
 
         self.grid_columnconfigure(0, weight=1)
         self.grid_rowconfigure(0, weight=1)
-        self._colorization_process_subject = ColorizationProcessSubject()
+        self._colorization_process_subject = colorization_process_subject.ColorizationProcessSubject()
         self.__show_default_image()
         self.__bind_mouse_events_for_load_image()
         self.__init_colorized_image_subject()
@@ -44,42 +44,42 @@ class DrawingCanvas(ttk.Frame):
 
     def restore_state(self, data):
         self._colorization_process_subject.notify(start=False)
-        colorization_algorithm = SingletonConfig().colorization_algorithm
+        colorization_algorithm = singleton_config.SingletonConfig().colorization_algorithm
         if colorization_algorithm == 'CUO':
             self._restore_state_cuo(data)
         else:
             self._restore_state_ct(data)
-        self._colorization_process_subject.notify(start=True)
 
     def _restore_state_ct(self, data):
         self._image_path = data['bw']
-        image = read_image(self._image_path)
+        image = image_processing_toolkit.read_image(self._image_path)
         self.__init_bw_matrix(image)
-        self.display(bgr_to_rgb(self.__matrix))
+        self.display(image_processing_toolkit.bgr_to_rgb(self.__matrix))
         self.__push_bw_image()
 
         self._image_path = data['ref']
-        image = read_image(self._image_path)
+        image = image_processing_toolkit.read_image(self._image_path)
         self.__init_bw_matrix(image)
-        self.display(bgr_to_rgb(self.__matrix))
+        self.display(image_processing_toolkit.bgr_to_rgb(self.__matrix))
 
-        self.__colorize_ct(read_image(data['ref']), read_image(data['bw']))
+        self.__colorize_ct(image_processing_toolkit.read_image(data['ref']),
+                           image_processing_toolkit.read_image(data['bw']))
 
     def _restore_state_cuo(self, data):
         self._image_path = data['bw']
-        image = read_image(self._image_path)
+        image = image_processing_toolkit.read_image(self._image_path)
         self.__init_bw_matrix(image)
         self.__init_pencil_config()
         self.__init_draw_behaviour()
         self.__init_update_behaviour()
         self.__bind_mouse_events()
-        self.display(bgr_to_rgb(self.__matrix))
+        self.display(image_processing_toolkit.bgr_to_rgb(self.__matrix))
         self.__push_bw_image()
         json_hints = data['hints']
         stops = np.array(data['stop'])
         counter = 0
         for hint in json_hints:
-            hint_command = LineDrawingCommand.from_json(self._canvas, hint)
+            hint_command = line_drawing_command.LineDrawingCommand.from_json(self._canvas, hint)
             hint_command.execute()
             self.__draw_behaviour.executed_commands.append(hint_command)
             self._mock_click(hint)
@@ -108,7 +108,7 @@ class DrawingCanvas(ttk.Frame):
         self.__update_behaviour.on_click(obj)
 
     def save_state(self):
-        colorization_algorithm = SingletonConfig().colorization_algorithm
+        colorization_algorithm = singleton_config.SingletonConfig().colorization_algorithm
         if colorization_algorithm == 'CUO':
             self._state['hints'] = self.__draw_behaviour.save_state()
         return self._state
@@ -120,7 +120,7 @@ class DrawingCanvas(ttk.Frame):
         self._colorization_process_subject.attach(observer)
 
     def display(self, matrix):
-        self._raw_image = ImageTk.PhotoImage(image=Image.fromarray(matrix))
+        self._raw_image = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(matrix))
         self._image = self._canvas.create_image(0, 0, image=self._raw_image, anchor="nw")
         self._canvas.config(height=matrix.shape[0])
         self._canvas.config(width=matrix.shape[1])
@@ -152,7 +152,7 @@ class DrawingCanvas(ttk.Frame):
 
     def __colorize(self):
         self._disable_drawing = True
-        self._waiting_indicate = create_info_window("Performing colorization. Please wait...")
+        self._waiting_indicate = gui_toolkit.create_info_window("Performing colorization. Please wait...")
         bw, color = self.__get_colorization_input()
         self.__update_behaviour.perform_colorize(bw, color)
         self.after(self.__DELAY_TIME, self._check_for_cuo_result)
@@ -163,8 +163,8 @@ class DrawingCanvas(ttk.Frame):
             x = result_candidate[0]
             y = result_candidate[1]
             result = result_candidate[2]
-            result = bgr_matrix_to_image(result)
-            result = bgr_to_rgb(result)
+            result = image_processing_toolkit.bgr_matrix_to_image(result)
+            result = image_processing_toolkit.bgr_to_rgb(result)
 
             bw, _ = self.__get_colorization_input()
             self.__colorized_image_subject.notify(x_start=x, y_start=y, result=result,
@@ -178,7 +178,7 @@ class DrawingCanvas(ttk.Frame):
     def _check_for_ct_result(self):
         result_candidate = self._ct_async_task.result()
         if result_candidate is not None:
-            result = bgr_to_rgb(result_candidate)
+            result = image_processing_toolkit.bgr_to_rgb(result_candidate)
             self.__colorized_image_subject.notify(x_start=0, y_start=0, result=result, fill=True)
             self._colorization_process_subject.notify(start=True)
 
@@ -204,16 +204,17 @@ class DrawingCanvas(ttk.Frame):
         self._canvas.pack(side=tk.RIGHT)
 
     def __init_pencil_config(self):
-        self._pencil_config_observer = PencilConfigObserver()
-        self._pencil_config = PencilConfig(self)
+        self._pencil_config_observer = pencil_config_observer.PencilConfigObserver()
+        self._pencil_config = pencil_config.PencilConfig(self)
         self._pencil_config.pencil_config_subject.attach(self._pencil_config_observer)
         self._pencil_config.pack(side=tk.LEFT, padx=20)
 
     def __init_update_behaviour(self):
-        self.__update_behaviour = UpdateBehaviour(self.__matrix, self._pencil_config.pencil_config_subject)
+        self.__update_behaviour = update_behaviour.UpdateBehaviour(self.__matrix,
+                                                                   self._pencil_config.pencil_config_subject)
 
     def __init_draw_behaviour(self):
-        self.__draw_behaviour = DrawBehaviour(self._canvas, self._pencil_config.pencil_config_subject)
+        self.__draw_behaviour = draw_behaviour.DrawBehaviour(self._canvas, self._pencil_config.pencil_config_subject)
 
     def __bind_mouse_events(self):
         self._canvas.bind('<B1-Motion>', self.on_mouse_motion)
@@ -227,52 +228,53 @@ class DrawingCanvas(ttk.Frame):
         if self._disable_drawing:
             return
 
-        colorization_algorithm = SingletonConfig().colorization_algorithm
+        colorization_algorithm = singleton_config.SingletonConfig().colorization_algorithm
         if colorization_algorithm == 'CUO':
-            self._image_path = browse_for_image('Select image to colorize')
+            self._image_path = image_processing_toolkit.browse_for_image('Select image to colorize')
             self._state['bw'] = self._image_path
             if self._image_path is not None:
-                image = read_image(self._image_path)
+                image = image_processing_toolkit.read_image(self._image_path)
                 self.__init_bw_matrix(image)
                 self.__init_pencil_config()
                 self.__init_draw_behaviour()
                 self.__init_update_behaviour()
                 self.__bind_mouse_events()
-                self.display(bgr_to_rgb(self.__matrix))
+                self.display(image_processing_toolkit.bgr_to_rgb(self.__matrix))
                 self.__push_bw_image()
             else:
                 self.__show_default_image()
                 return
             self._colorization_process_subject.notify(start=True)
         else:
-            self._image_path = browse_for_image('Select image to colorize')
+            self._image_path = image_processing_toolkit.browse_for_image('Select image to colorize')
             self._state['bw'] = self._image_path
             if self._image_path is not None:
-                image = read_image(self._image_path)
+                image = image_processing_toolkit.read_image(self._image_path)
                 self.__init_bw_matrix(image)
-                self.display(bgr_to_rgb(self.__matrix))
+                self.display(image_processing_toolkit.bgr_to_rgb(self.__matrix))
                 self.__push_bw_image()
             else:
                 self.__show_default_image()
                 return
 
-            self._image_path = browse_for_image('Select reference image')
+            self._image_path = image_processing_toolkit.browse_for_image('Select reference image')
             self._state['ref'] = self._image_path
             if self._image_path is not None:
-                image = read_image(self._image_path)
+                image = image_processing_toolkit.read_image(self._image_path)
                 self.__init_bw_matrix(image)
-                self.display(bgr_to_rgb(image))
+                self.display(image_processing_toolkit.bgr_to_rgb(image))
                 self.update()
             else:
                 self.__colorized_image_subject.notify(reset=True)
                 self.__show_default_image()
                 return
-            self.__colorize_ct(read_image(self._state['ref']), read_image(self._state['bw']))
+            self.__colorize_ct(image_processing_toolkit.read_image(self._state['ref']),
+                               image_processing_toolkit.read_image(self._state['bw']))
 
     def __colorize_ct(self, ref, bw):
         self._colorization_process_subject.notify(start=False)
         self._disable_drawing = True
-        self._waiting_indicate = create_info_window("Performing colorization. Please wait...")
+        self._waiting_indicate = gui_toolkit.create_info_window("Performing colorization. Please wait...")
         self._ct_async_task.run(ref, bw)
         self.after(self.__DELAY_TIME, self._check_for_ct_result)
 
@@ -281,15 +283,15 @@ class DrawingCanvas(ttk.Frame):
         self.__color_matrix = matrix.copy()
 
     def __show_default_image(self):
-        matrix = read_image('../assets/info_load.bmp')
+        matrix = image_processing_toolkit.read_image('assets/info_load.bmp')
         if self._canvas is None:
             self.__init_canvas(matrix)
         self.__init_bw_matrix(matrix)
         self.display(matrix)
 
     def __init_colorized_image_subject(self):
-        self.__colorized_image_subject = ColorizedImageSubject()
+        self.__colorized_image_subject = colorized_image_subject.ColorizedImageSubject()
 
     def __push_bw_image(self):
-        result = bgr_to_rgb(self.__matrix)
+        result = image_processing_toolkit.bgr_to_rgb(self.__matrix)
         self.__colorized_image_subject.notify(x_start=0, y_start=0, result=result, fill=True)

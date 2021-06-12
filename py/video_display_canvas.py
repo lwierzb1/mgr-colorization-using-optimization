@@ -39,7 +39,7 @@ class VideoDisplayCanvas(ttk.Frame, Observer):
         self.update()
 
     def __show_default_image(self):
-        matrix = read_image('../assets/info_idle.bmp')
+        matrix = read_image('assets/info_idle.bmp')
         self.__init_canvas(matrix)
         self.display(matrix)
 

@@ -9,7 +9,6 @@ Example usage:
 """
 
 import time
-from image_colorizer import ImageColorizer
 from image_colorizer_multiprocess import ImageColorizerMultiprocess
 from image_processing_toolkit import write_image
 from singleton_config import SingletonConfig

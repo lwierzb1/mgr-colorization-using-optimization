@@ -5,10 +5,10 @@ from tkinter import filedialog
 from tkinter import ttk
 from tkinter.filedialog import askopenfile
 
-from config_picker import ConfigPicker
-from display_canvas import DisplayCanvas
-from drawing_canvas import DrawingCanvas
-from image_processing_toolkit import bgr_to_rgb, write_image
+import config_picker
+import display_canvas
+import drawing_canvas
+import image_processing_toolkit
 from gui_toolkit import create_info_confirm_window
 from singleton_config import SingletonConfig
 from styled_observer_button import StyledObserverButton
@@ -85,7 +85,7 @@ def init_buttons_for_image(root_node, drawing_canvas, display_canvas):
 
 def pick_config():
     window = tk.Toplevel(root)
-    ConfigPicker(window, callback)
+    config_picker.ConfigPicker(window, callback)
     window.attributes('-topmost', 'true')
     window.update_idletasks()
     screen_width = window.winfo_screenwidth()
@@ -98,10 +98,10 @@ def pick_config():
     window.geometry("+%d+%d" % (x, y))
 
 
-def save_result(display_canvas: DisplayCanvas):
+def save_result(display_canvas: display_canvas.DisplayCanvas):
     bgr_matrix = display_canvas.get_result()
-    rgb_image = bgr_to_rgb(bgr_matrix)
-    write_image(rgb_image, 'result.bmp')
+    rgb_image = image_processing_toolkit.bgr_to_rgb(bgr_matrix)
+    image_processing_toolkit.write_image(rgb_image, 'result.bmp')
     create_info_confirm_window("Result image saved as " + get_working_directory() + "/result.bmp.")
 
 
@@ -138,7 +138,7 @@ def restore_state():
 
 
 def init_drawing_canvas_for_image(root_node):
-    drawing = DrawingCanvas(root_node)
+    drawing = drawing_canvas.DrawingCanvas(root_node)
     drawing.grid(row=0, column=0)
     root_node.bind('<Control-z>', drawing.undo_last_command)
     root_node.bind('<Control-y>', drawing.redo_last_command)
@@ -146,7 +146,7 @@ def init_drawing_canvas_for_image(root_node):
 
 
 def init_display_canvas_for_image(root_node):
-    display = DisplayCanvas(root_node)
+    display = display_canvas.DisplayCanvas(root_node)
     display.grid(row=0, column=1)
     return display
 
@@ -164,7 +164,7 @@ def init_display_canvas_for_video(root_node):
     if colorization_algorithm == 'CUO':
         display = VideoDisplayCanvas(root_node)
     else:
-        display = DisplayCanvas(root_node)
+        display = display_canvas.DisplayCanvas(root_node)
     display.grid(row=0, column=1)
     return display
 
@@ -241,7 +241,7 @@ def prepare_style():
     root.tk.call('source', 'style/azure.tcl')
     style.theme_use('azure')
 
-    root.iconphoto(True, tk.PhotoImage(file='../assets/icon.png'))
+    root.iconphoto(True, tk.PhotoImage(file='assets/icon.png'))
 
     root.title('Colorization Program')
     root.style = ttk.Style(root)
@@ -270,7 +270,8 @@ def prepare_style():
     root.grid_columnconfigure(0, weight=40)
     root.grid_columnconfigure(1, weight=40)
     root.grid_columnconfigure(2, weight=20)
-    root.state('zoomed')
+    w, h = root.winfo_screenwidth(), root.winfo_screenheight()
+    root.geometry("%dx%d+0+0" % (w, h))
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-from threading import Thread
+import threading
 
 
 class CUOAsyncTaskVideo:
@@ -19,8 +19,7 @@ class CUOAsyncTaskVideo:
             return None
 
     def run(self, color):
-        self._thread = Thread(
-            target=lambda: self._thread_run(color))
+        self._thread = threading.Thread(target=self._thread_run, args=(color,))
         self._thread.daemon = True
         self._thread.start()
 

@@ -1,13 +1,13 @@
-#!/usr/bin/env python
 """General purpose functions useful for image processing.
 """
 
+import tkinter.filedialog as tk_file
+
 import cv2
-import numpy as np
-import color_conv
-from tkinter import filedialog
-import pathlib
 import imageio
+import numpy as np
+
+import color_conv
 
 __author__ = "Lukasz Wierzbicki"
 __version__ = "1.0.0"
@@ -80,9 +80,9 @@ def hex_to_bgr(value):
 
 
 def browse_for_image(title):
-    filename = filedialog.askopenfilename(initialdir="/",
-                                          title=title,
-                                          filetypes=[("BMP Files", "*.bmp")])
+    filename = tk_file.askopenfilename(initialdir="/",
+                                       title=title,
+                                       filetypes=[("BMP Files", "*.bmp")])
     if filename:
         return filename
     else:
@@ -90,9 +90,9 @@ def browse_for_image(title):
 
 
 def browse_for_video():
-    filename = filedialog.askopenfilename(initialdir="/",
-                                          title="Select an video",
-                                          filetypes=[("AVI Files", "*.avi")])
+    filename = tk_file.askopenfilename(initialdir="/",
+                                       title="Select an video",
+                                       filetypes=[("AVI Files", "*.avi")])
     if filename:
         return filename
     else:

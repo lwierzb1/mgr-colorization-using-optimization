@@ -3,7 +3,7 @@ from tkinter import colorchooser
 from tkinter import ttk
 
 import consts
-from image_processing_toolkit import hex_to_bgr, bgr_to_rgb
+import image_processing_toolkit
 
 
 class PencilColorChooser(ttk.Frame):
@@ -18,7 +18,7 @@ class PencilColorChooser(ttk.Frame):
 
     def apply(self, fill_hex):
         self._color_hex = fill_hex
-        self._color_rgb = hex_to_bgr(fill_hex)
+        self._color_rgb = image_processing_toolkit.hex_to_bgr(fill_hex)
         self.__display_current_color()
         self.update()
 

@@ -1,16 +1,16 @@
 import tkinter as tk
 from tkinter import ttk
 
+import PIL
 import cv2
 import numpy as np
-from PIL import Image, ImageTk
 
-from image_colorizer_multiprocess import ImageColorizerMultiprocess
-from image_processing_toolkit import read_image
-from observer import Observer
+import image_colorizer_multiprocess
+import image_processing_toolkit
+import observer
 
 
-class DisplayCanvas(ttk.Frame, Observer):
+class DisplayCanvas(tk.ttk.Frame, observer.Observer):
     def __init__(self, master, **kw):
         super().__init__(master, **kw)
         self._raw_image = None
@@ -20,7 +20,7 @@ class DisplayCanvas(ttk.Frame, Observer):
         self.__show_default_image()
 
     def update_color(self, bw, marked):
-        colorizer = ImageColorizerMultiprocess(bw, marked)
+        colorizer = image_colorizer_multiprocess.ImageColorizerMultiprocess(bw, marked)
         result = colorizer.colorize() * 255
         result = cv2.cvtColor(result.astype(np.uint8), cv2.COLOR_BGR2RGB)
         self.display(result)
@@ -34,12 +34,12 @@ class DisplayCanvas(ttk.Frame, Observer):
 
     def display(self, array):
         self._image_array = array
-        self._raw_image = ImageTk.PhotoImage(image=Image.fromarray(array))
+        self._raw_image = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(array))
         self._image = self._canvas.create_image(0, 0, image=self._raw_image, anchor="nw")
         self.update()
 
     def __show_default_image(self):
-        matrix = read_image('../assets/info_idle.bmp')
+        matrix = image_processing_toolkit.read_image('assets/info_idle.bmp')
         if self._canvas is None:
             self.__init_canvas(matrix)
         self.display(matrix)

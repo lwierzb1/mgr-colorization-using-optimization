@@ -2,11 +2,11 @@ import tkinter as tk
 
 import cv2
 
-from drawing_command import DrawingCommand
-from image_processing_toolkit import hex_to_bgr
+import drawing_command
+import image_processing_toolkit
 
 
-class LineDrawingCommand(DrawingCommand):
+class LineDrawingCommand(drawing_command.DrawingCommand):
     def __init__(self, canvas: tk.Canvas, **kwargs):
         super().__init__(canvas)
         self._line_id = None
@@ -41,6 +41,6 @@ class LineDrawingCommand(DrawingCommand):
                                                  smooth=False)
 
     def execute_on_matrix(self, matrix):
-        color = hex_to_bgr(self._fill)
+        color = image_processing_toolkit.hex_to_bgr(self._fill)
         width = int(float(self._width))
         cv2.line(matrix, self._start, self._stop, color=color, thickness=width)

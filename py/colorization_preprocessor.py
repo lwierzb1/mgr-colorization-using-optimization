@@ -1,12 +1,12 @@
 import cv2
 import numpy as np
 
-from singleton_config import SingletonConfig
-from update_grid import UpdateGrid
+import singleton_config
+import update_grid
 
 
 def _prepare_data_for_colorization(bw_matrix, colored_matrix, sigma=0.33):
-    if not SingletonConfig().edge_detection:
+    if not singleton_config.SingletonConfig().edge_detection:
         return colored_matrix.copy()
     diff = cv2.cvtColor(bw_matrix, cv2.COLOR_BGR2GRAY) - cv2.cvtColor(colored_matrix, cv2.COLOR_BGR2GRAY)
 
@@ -75,7 +75,7 @@ class ColorizationPreprocessor:
         return (min_x, min_y, max_x, max_y), (sub_bw_gridded_image, prepared_color_gridded_image)
 
     def __create_grid(self, matrix):
-        grid = UpdateGrid(matrix, self.__GRID_SIZE_ROW, self.__GRID_SIZE_COLUMN)
+        grid = update_grid.UpdateGrid(matrix, self.__GRID_SIZE_ROW, self.__GRID_SIZE_COLUMN)
         self.__pencil_config_subject.attach(grid.pencil_config_observer)
         return grid
 

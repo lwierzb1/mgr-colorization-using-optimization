@@ -2,13 +2,13 @@ import math
 import random
 
 import cv2
+import numba
 import numpy as np
-from numba import jit
 
 from singleton_config import SingletonConfig
 
 
-@jit(parallel=True, nopython=True, fastmath=True, cache=True)
+@numba.jit(parallel=True, nopython=True, fastmath=True, cache=True)
 def _colorize_parallel(gray, gray_std_dev, sample_values, jitter_samples, colored, result):
     for i in range(gray.shape[0]):
         for j in range(gray.shape[1]):
@@ -79,7 +79,7 @@ class ColorTransfer:
         return self._neighbor_std_dev_core(luminance, r)
 
     @staticmethod
-    @jit(nopython=True, fastmath=True, cache=True)
+    @numba.jit(nopython=True, fastmath=True, cache=True)
     def _neighbor_std_dev_core(luminance, r):
         result = np.empty((luminance.shape[0], luminance.shape[1]))
         for i in range(r, luminance.shape[0] - r):
@@ -104,7 +104,7 @@ class ColorTransfer:
         return result
 
     @staticmethod
-    @jit(nopython=True, fastmath=True, cache=True)
+    @numba.jit(nopython=True, fastmath=True, cache=True)
     def _get_jitter_samples(img):
         samples_in_a_row = img.shape[0] / 2
         samples_in_a_col = img.shape[1] / 2

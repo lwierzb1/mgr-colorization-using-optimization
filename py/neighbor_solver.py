@@ -1,8 +1,9 @@
-from abc import ABC
+import abc
+
 import numpy as np
 
 
-class NeighborSolver(ABC):
+class NeighborSolver(abc.ABC):
     """
            A class used to solve finding Y channel value of neighbor for given pixel.
 

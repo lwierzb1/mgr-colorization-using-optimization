@@ -1,6 +1,6 @@
-from threading import Thread
+import threading
 
-from image_colorizer_multiprocess import ImageColorizerMultiprocess
+import image_colorizer_multiprocess
 
 
 class CUOAsyncTask:
@@ -20,10 +20,10 @@ class CUOAsyncTask:
             return None
 
     def run(self, input_matrices):
-        self._thread = Thread(target=lambda: self._thread_run(input_matrices))
+        self._thread = threading.Thread(target=self._thread_run, args=(input_matrices,))
         self._thread.daemon = True
         self._thread.start()
 
     def _thread_run(self, input_matrices):
-        colorizer = ImageColorizerMultiprocess(input_matrices[0], input_matrices[1])
+        colorizer = image_colorizer_multiprocess.ImageColorizerMultiprocess(input_matrices[0], input_matrices[1])
         self._result = colorizer.colorize()

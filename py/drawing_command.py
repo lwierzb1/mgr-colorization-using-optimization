@@ -1,21 +1,21 @@
-from abc import abstractmethod
-
-from command import Command
+import abc
 import tkinter as tk
 
+import command
 
-class DrawingCommand(Command):
+
+class DrawingCommand(command.Command):
     def __init__(self, canvas: tk.Canvas):
         self._canvas = canvas
 
-    @abstractmethod
+    @abc.abstractmethod
     def undo(self):
         pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def execute(self):
         pass
 
-    @abstractmethod
+    @abc.abstractmethod
     def execute_on_matrix(self, matrix):
         pass

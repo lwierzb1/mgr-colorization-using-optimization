@@ -1,5 +1,5 @@
-from threading import Thread
-from image_processing_toolkit import read_image
+import threading
+import image_processing_toolkit
 
 
 class CTAsyncTaskVideo:
@@ -20,11 +20,10 @@ class CTAsyncTaskVideo:
             return None
 
     def run(self, image_ref):
-        self._thread = Thread(
-            target=lambda: self._thread_run(image_ref))
+        self._thread = threading.Thread(target=self._thread_run, args=(image_ref,))
         self._thread.daemon = True
         self._thread.start()
 
     def _thread_run(self, image_ref):
-        self._video_colorizer.colorize_video(read_image(image_ref))
+        self._video_colorizer.colorize_video(image_processing_toolkit.read_image(image_ref))
         self.finished = True

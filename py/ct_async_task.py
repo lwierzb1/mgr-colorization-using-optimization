@@ -1,6 +1,5 @@
-from threading import Thread
-
-from color_transfer import ColorTransfer
+import threading
+import color_transfer
 
 
 class CTAsyncTask:
@@ -10,7 +9,7 @@ class CTAsyncTask:
         self._started = False
         self._thread = None
         self._result = None
-        self._colorizer = ColorTransfer()
+        self._colorizer = color_transfer.ColorTransfer()
 
     def result(self):
         if self._result is not None:
@@ -21,7 +20,7 @@ class CTAsyncTask:
             return None
 
     def run(self, ref, bw):
-        self._thread = Thread(target=lambda: self._thread_run(ref, bw))
+        self._thread = threading.Thread(target=self._thread_run, args=(ref, bw,))
         self._thread.daemon = True
         self._thread.start()
 

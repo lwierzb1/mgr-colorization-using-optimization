@@ -1,11 +1,11 @@
 import numpy as np
 
-from affinity_solver import AffinitySolver
+import affinity_solver
 
 
-class AffinityCpuSolver(AffinitySolver):
+class AffinityCpuSolver(affinity_solver.AffinitySolver):
     def __init__(self):
-        super(AffinitySolver, self).__init__()
+        super(affinity_solver.AffinitySolver, self).__init__()
 
     def compute_affinity(self, center_y, neighbors_y):
         diff = neighbors_y - center_y

@@ -1,20 +1,17 @@
-#!/usr/bin/env python
-import time
-
-import numpy as np
-import scipy.sparse
-import cv2
-
-from image_processing_toolkit import bgr_to_yuv_channels, yuv_channels_to_bgr_matrix
-from mathematical_toolkit import compute_variance, ensure_is_not_zero
-from optimization_solver import OptimizationSolver
-import color_conv
-from weights_optimized_solver import WeightsOptimizedSolver
-
 __author__ = "Lukasz Wierzbicki"
 __version__ = "1.0.0"
 __maintainer__ = "Lukasz Wierzbicki"
 __email__ = "01113202@pw.edu.pl"
+
+import time
+
+import numpy as np
+import scipy.sparse
+
+import image_processing_toolkit
+import mathematical_toolkit as mtk
+import weights_optimized_solver
+import optimization_solver
 
 
 def compute_weights_of_y_neighbor_values(neighbor_values, y_value):
@@ -31,14 +28,14 @@ def compute_weights_of_y_neighbor_values(neighbor_values, y_value):
     y_value: luminance of pixel around which neighbors were searched
     """
     # Calculate variance of neighbor pixels
-    variance = compute_variance(neighbor_values)
+    variance = mtk.compute_variance(neighbor_values)
 
     # Calculate weight of neighbor pixels
     wrs = np.exp(-((neighbor_values - y_value) ** 2) / variance)
 
     summed_values = np.sum(wrs)
     # make the weighting function sum up to 1
-    wrs = - (wrs / ensure_is_not_zero(summed_values))
+    wrs = - (wrs / mtk.ensure_is_not_zero(summed_values))
     return wrs
 
 
@@ -63,7 +60,7 @@ class ColorizationOptimizedSolver:
         self.__marked_bgr_matrix = marked_bgr_matrix
         self.__IMAGE_H, self._IMAGE_W, _ = grayscale_bgr_matrix.shape
         self.__IMAGE_SIZE = self._IMAGE_W * self.__IMAGE_H
-        self._weights_solver = WeightsOptimizedSolver()
+        self._weights_solver = weights_optimized_solver.WeightsOptimizedSolver()
 
     def solve(self):
         # split to YUV channels
@@ -77,16 +74,16 @@ class ColorizationOptimizedSolver:
         s2 = time.time()
         print('mapping to sparse took: ', s2 - s1)
         # perform optimization
-        optimization_solver = OptimizationSolver(mat_a, has_hints)
+        solver = optimization_solver.OptimizationSolver(mat_a, has_hints)
 
         s3 = time.time()
-        new_u, new_v = optimization_solver.optimize(u_channel, v_channel)
+        new_u, new_v = solver.optimize(u_channel, v_channel)
         print('optimize: ', time.time() - s3)
-        return yuv_channels_to_bgr_matrix(y_channel, new_u, new_v)
+        return image_processing_toolkit.yuv_channels_to_bgr_matrix(y_channel, new_u, new_v)
 
     def __get_yuv_channels_from_matrices(self):
-        y_channel, _, _ = bgr_to_yuv_channels(self.__grayscale_bgr_matrix)
-        _, u_channel, v_channel = bgr_to_yuv_channels(self.__marked_bgr_matrix)
+        y_channel, _, _ = image_processing_toolkit.bgr_to_yuv_channels(self.__grayscale_bgr_matrix)
+        _, u_channel, v_channel = image_processing_toolkit.bgr_to_yuv_channels(self.__marked_bgr_matrix)
 
         return y_channel, u_channel, v_channel
 

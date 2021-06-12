@@ -1,14 +1,10 @@
-#!/usr/bin/env python
-
-
 import numpy as np
 import scipy
-from scipy.sparse import linalg
-from scipy.sparse.linalg import lgmres, cg
-from mathematical_toolkit import jacobi
-import sys
+import scipy.sparse as sc_sparse
+import scipy.sparse.linalg as sc_linalg
 
-from singleton_config import SingletonConfig
+import mathematical_toolkit
+import singleton_config
 
 
 class OptimizationSolver:
@@ -33,7 +29,7 @@ class OptimizationSolver:
         self.__idx_colored = np.nonzero(has_hints.reshape(self.__IMAGE_SIZE, order='F'))
 
     def optimize(self, u_channel, v_channel):
-        config = SingletonConfig()
+        config = singleton_config.SingletonConfig()
         jacobi_approximation = config.jacobi_approximation
         lin_alg = config.linear_algorithm
 
@@ -70,12 +66,12 @@ class OptimizationSolver:
         b = np.zeros(self.__IMAGE_SIZE)
         pic_channel_flat = color_channel.reshape(self.__IMAGE_SIZE, order='F')
         b[self.__idx_colored] = pic_channel_flat[self.__idx_colored]
-        new_color_channel = jacobi(self.__mat_a, b, approximation)
+        new_color_channel = mathematical_toolkit.jacobi(self.__mat_a, b, approximation)
         return np.reshape(new_color_channel, (self.__IMAGE_H, self.__IMAGE_W), order='F')
 
     def __compute_new_color_channel_lgmres(self, color_channel):
         b = np.zeros(self.__IMAGE_SIZE)
         pic_channel_flat = color_channel.reshape(self.__IMAGE_SIZE, order='F')
         b[self.__idx_colored] = pic_channel_flat[self.__idx_colored]
-        new_color_channel, _ = lgmres(self.__mat_a, b)
+        new_color_channel, _ = sc_linalg.lgmres(self.__mat_a, b)
         return np.reshape(new_color_channel, (self.__IMAGE_H, self.__IMAGE_W), order='F')

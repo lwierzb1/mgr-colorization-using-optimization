@@ -3,11 +3,12 @@ __version__ = "1.0.0"
 __maintainer__ = "Lukasz Wierzbicki"
 __email__ = "01113202@pw.edu.pl"
 
-from neighbor_solver import NeighborSolver
 import numpy as np
 
+import neighbor_solver
 
-class NeighborCpuSolver(NeighborSolver):
+
+class NeighborCpuSolver(neighbor_solver.NeighborSolver):
     def __init__(self):
         super().__init__()
         self._WINDOW_WIDTH = 3

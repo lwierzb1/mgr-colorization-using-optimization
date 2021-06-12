@@ -1,12 +1,12 @@
-from tkinter import *
+import tkinter as tk
 
-from pencil_config_observer import PencilConfigObserver
-from line_drawing_command import LineDrawingCommand
-from pencil_config_subject import PencilConfigSubject
+import line_drawing_command
+import pencil_config_observer
+import pencil_config_subject
 
 
 class DrawBehaviour:
-    def __init__(self, canvas: Canvas, pencil_config_subject: PencilConfigSubject):
+    def __init__(self, canvas: tk.Canvas, pencil_config_subject: pencil_config_subject.PencilConfigSubject):
         self.__init_pencil_config_observer(pencil_config_subject)
         self.__canvas = canvas
         self.__old_x = None
@@ -65,11 +65,11 @@ class DrawBehaviour:
         self.__old_y = e.y
 
     def __draw_line(self, start, stop):
-        command = LineDrawingCommand(self.__canvas,
-                                     start=start,
-                                     stop=stop,
-                                     width=self._pencil_config_observer.width,
-                                     fill=self._pencil_config_observer.hex)
+        command = line_drawing_command.LineDrawingCommand(self.__canvas,
+                                                          start=start,
+                                                          stop=stop,
+                                                          width=self._pencil_config_observer.width,
+                                                          fill=self._pencil_config_observer.hex)
         self.__run_command(command)
 
     def __run_command(self, command):
@@ -81,5 +81,5 @@ class DrawBehaviour:
         self._undo_commands.append(command)
 
     def __init_pencil_config_observer(self, pencil_config_subject):
-        self._pencil_config_observer = PencilConfigObserver()
+        self._pencil_config_observer = pencil_config_observer.PencilConfigObserver()
         pencil_config_subject.attach(self._pencil_config_observer)

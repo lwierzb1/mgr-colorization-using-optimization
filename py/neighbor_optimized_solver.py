@@ -3,12 +3,13 @@ __version__ = "1.0.0"
 __maintainer__ = "Lukasz Wierzbicki"
 __email__ = "01113202@pw.edu.pl"
 
+import numba
 import numpy as np
-from numba import jit
-from neighbor_solver import NeighborSolver
+
+import neighbor_solver
 
 
-class NeighborOptimizedSolver(NeighborSolver):
+class NeighborOptimizedSolver(neighbor_solver.NeighborSolver):
 
     def __init__(self):
         super().__init__()
@@ -19,7 +20,7 @@ class NeighborOptimizedSolver(NeighborSolver):
         return find_neighbors_optimized(y_channel, center, self.__WINDOW_WIDTH)
 
 
-@jit(nopython=True, cache=True, fastmath=True, nogil=True)
+@numba.jit(nopython=True, cache=True, fastmath=True, nogil=True)
 def find_neighbors_optimized(y_channel, center, window_width):
     neighbors = []
     image_rows = y_channel.shape[0]

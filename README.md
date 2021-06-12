@@ -7,7 +7,16 @@
 # Minimalne wymagania systemowe do uruchomienia aplikacji:
 
 - python w wersji 3+
+- python3-tk
+```
+sudo apt-get install python3-tk
+```
 - pipenv
+```
+sudo apt-get install python3-pip
+python3 -m pip install pipenv
+```
+
 
 # Proces uruchamiania aplikacji
 
