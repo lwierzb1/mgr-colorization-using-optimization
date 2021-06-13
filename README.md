@@ -1,27 +1,32 @@
-# [Colorization using optimization](https://www.cs.huji.ac.il/~yweiss/Colorization/colorization-siggraph04.pdf)
-
-### Implementacja algorytmu z wykorzystaniem języka Python.
+### Praca magisterska 
 
 ### Łukasz Wierzbicki, Politechnika Warszawska
-
-# Minimalne wymagania systemowe do uruchomienia aplikacji:
-
-- python w wersji 3+
-- python3-tk
-```
-sudo apt-get install python3-tk
-```
-- pipenv
-```
-sudo apt-get install python3-pip
-python3 -m pip install pipenv
-```
 
 
 # Proces uruchamiania aplikacji
 
-```
-pipenv install
-pipenv shell
-python3 paint.py
-```
+## Windows
+
+### Wymagania systemowe
+
+- python w wersji 3 dostępny z linii poleceń pod etykietą `python3`
+- manager pakietów `pip`
+
+### Proces uruchamiania
+
+Należy uruchomić skrypt `run.bat`
+
+## Linux
+
+### Wymagania systemowe
+
+- python w wersji 3 dostępny z linii poleceń pod etykietą `python3`
+
+### Proces uruchamiania aplikacji
+
+Należy uruchomić skrypt `run.sh`.
+
+
+# Uwagi
+
+W zależności od ustawionych zmiennych środowiskowych etykieta `python3` może być zmieniona na etykietę `python`.
