@@ -51,10 +51,6 @@ class ColorTransfer:
 
     def transfer(self, colored, gray):
         self._colored = colored
-        factor_row = 1
-        factor_col = 1
-        # self._colored = cv2.resize(self._colored,
-        #                            (factor_row * self._colored.shape[0], factor_col * self._colored.shape[1]))
         self._colored = cv2.cvtColor(self._colored, cv2.COLOR_BGR2Lab)
         self._gray = cv2.cvtColor(gray, cv2.COLOR_BGR2GRAY)
 
@@ -116,8 +112,6 @@ class ColorTransfer:
 
         for i in range(samples_in_a_col):
             for j in range(samples_in_a_row):
-                # rand_x = ((j * block_size_x) + (random.randint(0, block_size_x))) % img.shape[1]
-                # rand_y = ((i * block_size_y) + (random.randint(0, block_size_y))) % img.shape[0]
                 rand_x = random.randint(0, img.shape[1] - 1)
                 rand_y = random.randint(0, img.shape[0] - 1)
                 jitter_samples.append([rand_x, rand_y])

@@ -32,9 +32,7 @@ class VideoOptimizationColorizer:
             return
 
         self._find_features_to_track()
-        # drawing on frame like on canvas .... start
         self._marked_frame = m
-        # drawing on frame like on canvas .... stop
         self._continuous_colorization()
         self._processed_frames = 0
 

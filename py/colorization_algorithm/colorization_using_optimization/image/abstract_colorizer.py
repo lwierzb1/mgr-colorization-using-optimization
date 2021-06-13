@@ -27,8 +27,6 @@ class AbstractColorizer(ABC):
     """
 
     def __init__(self, grayscale, marked):
-        # bgr_grayscale = read_image(grayscale)
-        # bgr_marked = read_image(marked)
         self._grayscale_matrix = image_processing.bgr_as_float_matrix(grayscale)
         self._marked_matrix = image_processing.bgr_as_float_matrix(marked)
 

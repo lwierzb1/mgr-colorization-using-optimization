@@ -31,7 +31,6 @@ def create_info_window(text):
 def create_info_confirm_window(text):
     window = tk.Toplevel()
 
-    # window.attributes('-disabled', True)
     window.protocol("WM_DELETE_WINDOW", disable_event)
 
     label = ttk.Label(window, text=text, style="BW.TLabel")

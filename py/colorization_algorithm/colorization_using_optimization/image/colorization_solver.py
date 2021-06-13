@@ -69,7 +69,6 @@ class ColorizationSolver:
         s1 = time.time()
         print('weights took: ', s1 - s)
         mat_a = self._map_wrs_to_sparse_matrix(image_coordinates, neighbors_coordinates, wrs)
-        # mat_a = np.array(wrs)
         s2 = time.time()
         print('mapping to sparse took: ', s2 - s1)
         # perform optimization

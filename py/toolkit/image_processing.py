@@ -44,7 +44,6 @@ def bgr_to_yuv_channels(matrix):
     """
     rgb = cv2.cvtColor(matrix, cv2.COLOR_BGR2RGB)
     yuv_matrix = rgb2yuv(rgb)
-    # yuv_matrix = cv2.cvtColor(rgb, cv2.COLOR_RGB2YUV)
     return cv2.split(yuv_matrix)
 
 
@@ -57,7 +56,6 @@ def yuv_channels_to_bgr_matrix(y_channel, u_channel, v_channel):
     """
     yuv_image = cv2.merge((y_channel.astype(np.float32), u_channel.astype(np.float32), v_channel.astype(np.float32)))
     rgb_image = yuv2rgb(yuv_image)
-    # rgb_image = cv2.cvtColor(yuv_image, cv2.COLOR_YUV2RGB)
     bgr_image = cv2.cvtColor(rgb_image.astype(np.float32), cv2.COLOR_RGB2BGR)
     return bgr_image
 

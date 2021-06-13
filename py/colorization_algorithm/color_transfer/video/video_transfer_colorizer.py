@@ -21,9 +21,7 @@ class VideoTransferColorizer:
         if self.video_ended:
             return
 
-        # drawing on frame like on canvas .... start
         self._marked_frame = example
-        # drawing on frame like on canvas .... stop
         self._continuous_colorization()
         if self.video_ended:
             self._out.release()
