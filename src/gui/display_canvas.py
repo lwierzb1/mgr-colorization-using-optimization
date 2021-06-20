@@ -25,13 +25,6 @@ class DisplayCanvas(tk.ttk.Frame, src.observer.observer.Observer):
         result = cv2.cvtColor(result.astype(np.uint8), cv2.COLOR_BGR2RGB)
         self.display(result)
 
-    def _init_canvas(self, input_matrix):
-        self._image = None
-        self._raw_image = None
-        self._canvas = tk.Canvas(self, height=input_matrix.shape[0], width=input_matrix.shape[1], bd=0,
-                                 highlightthickness=0)
-        self._canvas.pack()
-
     def display(self, array):
         self.image_array = array
         self._raw_image = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(array))
@@ -65,6 +58,13 @@ class DisplayCanvas(tk.ttk.Frame, src.observer.observer.Observer):
             self.image_array[y_start:y_start + height, x_start:x_start + width] = result
             self.display(self.image_array)
 
+    def _init_canvas(self, input_matrix):
+        self._image = None
+        self._raw_image = None
+        self._canvas = tk.Canvas(self, height=input_matrix.shape[0], width=input_matrix.shape[1], bd=0,
+                                 highlightthickness=0)
+        self._canvas.pack()
+        
     def _show_default_image(self):
         matrix = image_processing.read_image('../assets/info_idle.bmp')
         if self._canvas is None:

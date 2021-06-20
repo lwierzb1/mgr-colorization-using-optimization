@@ -1,7 +1,7 @@
-import observer
+from src.observer.observer import Observer
 
 
-class ColorizedImageObserver(observer.Observer):
+class ColorizedImageObserver(Observer):
     def __init__(self):
         self.x_start = None
         self.y_start = None
