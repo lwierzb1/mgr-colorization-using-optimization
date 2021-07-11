@@ -29,7 +29,7 @@ class DrawingCanvas(ttk.Frame):
         self._waiting_indicate = None
         self._disable_drawing = False
         self._ct_async_task = ct_async_task.CTAsyncTask()
-        self.__DELAY_TIME = 200
+        self._DELAY_TIME = 200
         self._state = dict()
         self._state['stop'] = []
 
@@ -40,6 +40,49 @@ class DrawingCanvas(ttk.Frame):
         self._bind_mouse_events_for_load_image()
         self._init_colorized_image_subject()
         self._colorization_process_subject.notify(start=False)
+
+    def save_state(self):
+        colorization_algorithm = SingletonConfig().colorization_algorithm
+        if colorization_algorithm == 'CUO':
+            self._state['hints'] = self._draw_behaviour.save_state()
+        return self._state
+
+    def add_observer(self, observer):
+        self._colorized_image_subject.attach(observer)
+
+    def add_colorization_process_observer(self, observer):
+        self._colorization_process_subject.attach(observer)
+
+    def display(self, matrix):
+        self._raw_image = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(matrix))
+        self._image = self._canvas.create_image(0, 0, image=self._raw_image, anchor="nw")
+        self._canvas.config(height=matrix.shape[0])
+        self._canvas.config(width=matrix.shape[1])
+
+    def undo_last_command(self, e):
+        self._draw_behaviour.undo_last_command()
+
+    def redo_last_command(self, e):
+        self._draw_behaviour.redo_last_command()
+
+    def on_mouse_motion(self, e):
+        if self._disable_drawing:
+            return
+        self._draw_behaviour.draw(e)
+        self._update_behaviour.on_motion(e)
+
+    def on_mouse_click(self, e):
+        if self._disable_drawing:
+            return
+        self._draw_behaviour.draw_dot(e)
+        self._update_behaviour.on_click(e)
+
+    def on_mouse_release(self, e):
+        if self._disable_drawing:
+            return
+        self._draw_behaviour.on_release(e)
+        self._state['stop'].append(len(self._draw_behaviour.executed_commands))
+        self._colorize()
 
     def restore_state(self, data):
         self._colorization_process_subject.notify(start=False)
@@ -53,13 +96,13 @@ class DrawingCanvas(ttk.Frame):
         self._image_path = data['bw']
         image = image_processing.read_image(self._image_path)
         self._init_bw_matrix(image)
-        self.display(image_processing.bgr_to_rgb(self.__matrix))
+        self.display(image_processing.bgr_to_rgb(self._matrix))
         self._push_bw_image()
 
         self._image_path = data['ref']
         image = image_processing.read_image(self._image_path)
         self._init_bw_matrix(image)
-        self.display(image_processing.bgr_to_rgb(self.__matrix))
+        self.display(image_processing.bgr_to_rgb(self._matrix))
 
         self._colorize_ct(image_processing.read_image(data['ref']),
                           image_processing.read_image(data['bw']))
@@ -72,7 +115,7 @@ class DrawingCanvas(ttk.Frame):
         self._init_draw_behaviour()
         self._init_update_behaviour()
         self._bind_mouse_events()
-        self.display(image_processing.bgr_to_rgb(self.__matrix))
+        self.display(image_processing.bgr_to_rgb(self._matrix))
         self._push_bw_image()
         json_hints = data['hints']
         stops = np.array(data['stop'])
@@ -80,7 +123,7 @@ class DrawingCanvas(ttk.Frame):
         for hint in json_hints:
             hint_command = LineDrawingCommand.from_json(self._canvas, hint)
             hint_command.execute()
-            self.__draw_behaviour.executed_commands.append(hint_command)
+            self._draw_behaviour.executed_commands.append(hint_command)
             self._mock_click(hint)
             counter += 1
             if counter in stops:
@@ -101,63 +144,20 @@ class DrawingCanvas(ttk.Frame):
         self._pencil_config.restore(hint)
         obj.x = hint['start'][0]
         obj.y = hint['start'][1]
-        self.__update_behaviour.on_click(obj)
+        self._update_behaviour.on_click(obj)
         obj.x = hint['stop'][0]
         obj.y = hint['stop'][1]
-        self.__update_behaviour.on_click(obj)
-
-    def save_state(self):
-        colorization_algorithm = SingletonConfig().colorization_algorithm
-        if colorization_algorithm == 'CUO':
-            self._state['hints'] = self.__draw_behaviour.save_state()
-        return self._state
-
-    def add_observer(self, observer):
-        self.__colorized_image_subject.attach(observer)
-
-    def add_colorization_process_observer(self, observer):
-        self._colorization_process_subject.attach(observer)
-
-    def display(self, matrix):
-        self._raw_image = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(matrix))
-        self._image = self._canvas.create_image(0, 0, image=self._raw_image, anchor="nw")
-        self._canvas.config(height=matrix.shape[0])
-        self._canvas.config(width=matrix.shape[1])
-
-    def undo_last_command(self, e):
-        self.__draw_behaviour.undo_last_command()
-
-    def redo_last_command(self, e):
-        self.__draw_behaviour.redo_last_command()
-
-    def on_mouse_motion(self, e):
-        if self._disable_drawing:
-            return
-        self.__draw_behaviour.draw(e)
-        self.__update_behaviour.on_motion(e)
-
-    def on_mouse_click(self, e):
-        if self._disable_drawing:
-            return
-        self.__draw_behaviour.draw_dot(e)
-        self.__update_behaviour.on_click(e)
-
-    def on_mouse_release(self, e):
-        if self._disable_drawing:
-            return
-        self.__draw_behaviour.on_release(e)
-        self._state['stop'].append(len(self.__draw_behaviour.executed_commands))
-        self._colorize()
+        self._update_behaviour.on_click(obj)
 
     def _colorize(self):
         self._disable_drawing = True
         self._waiting_indicate = gui.create_info_window("Performing colorization. Please wait...")
         bw, color = self._get_colorization_input()
-        self.__update_behaviour.perform_colorize(bw, color)
-        self.after(self.__DELAY_TIME, self._check_for_cuo_result)
+        self._update_behaviour.perform_colorize(bw, color)
+        self.after(self._DELAY_TIME, self._check_for_cuo_result)
 
     def _check_for_cuo_result(self):
-        result_candidate = self.__update_behaviour.check_for_result()
+        result_candidate = self._update_behaviour.check_for_result()
         if result_candidate is not None:
             x = result_candidate[0]
             y = result_candidate[1]
@@ -166,32 +166,32 @@ class DrawingCanvas(ttk.Frame):
             result = image_processing.bgr_to_rgb(result)
 
             bw, _ = self._get_colorization_input()
-            self.__colorized_image_subject.notify(x_start=x, y_start=y, result=result,
-                                                  reference=bw[y:y + result.shape[0], x:x + result.shape[1]])
+            self._colorized_image_subject.notify(x_start=x, y_start=y, result=result,
+                                                 reference=bw[y:y + result.shape[0], x:x + result.shape[1]])
 
             self._waiting_indicate.destroy()
             self._disable_drawing = False
         else:
-            self.after(self.__DELAY_TIME, self._check_for_cuo_result)
+            self.after(self._DELAY_TIME, self._check_for_cuo_result)
 
     def _check_for_ct_result(self):
         result_candidate = self._ct_async_task.result()
         if result_candidate is not None:
             result = image_processing.bgr_to_rgb(result_candidate)
-            self.__colorized_image_subject.notify(x_start=0, y_start=0, result=result, fill=True)
+            self._colorized_image_subject.notify(x_start=0, y_start=0, result=result, fill=True)
             self._colorization_process_subject.notify(start=True)
 
             self._waiting_indicate.destroy()
             self._disable_drawing = False
         else:
-            self.after(self.__DELAY_TIME, self._check_for_ct_result)
+            self.after(self._DELAY_TIME, self._check_for_ct_result)
 
     def _get_colorization_input(self):
-        return self.__matrix, self._get_scribbles_matrix()
+        return self._matrix, self._get_scribbles_matrix()
 
     def _get_scribbles_matrix(self):
-        scribbles_matrix = self.__matrix.copy()
-        for command in self.__draw_behaviour.executed_commands:
+        scribbles_matrix = self._matrix.copy()
+        for command in self._draw_behaviour.executed_commands:
             command.execute_on_matrix(scribbles_matrix)
         return scribbles_matrix
 
@@ -209,11 +209,11 @@ class DrawingCanvas(ttk.Frame):
         self._pencil_config.pack(side=tk.LEFT, padx=20)
 
     def _init_update_behaviour(self):
-        self.__update_behaviour = update_behaviour.UpdateBehaviour(self.__matrix,
-                                                                   self._pencil_config.pencil_config_subject)
+        self._update_behaviour = update_behaviour.UpdateBehaviour(self._matrix,
+                                                                  self._pencil_config.pencil_config_subject)
 
     def _init_draw_behaviour(self):
-        self.__draw_behaviour = DrawBehaviour(self._canvas, self._pencil_config.pencil_config_subject)
+        self._draw_behaviour = DrawBehaviour(self._canvas, self._pencil_config.pencil_config_subject)
 
     def _bind_mouse_events(self):
         self._canvas.bind('<B1-Motion>', self.on_mouse_motion)
@@ -238,7 +238,7 @@ class DrawingCanvas(ttk.Frame):
                 self._init_draw_behaviour()
                 self._init_update_behaviour()
                 self._bind_mouse_events()
-                self.display(image_processing.bgr_to_rgb(self.__matrix))
+                self.display(image_processing.bgr_to_rgb(self._matrix))
                 self._push_bw_image()
             else:
                 self._show_default_image()
@@ -250,7 +250,7 @@ class DrawingCanvas(ttk.Frame):
             if self._image_path is not None:
                 image = image_processing.read_image(self._image_path)
                 self._init_bw_matrix(image)
-                self.display(image_processing.bgr_to_rgb(self.__matrix))
+                self.display(image_processing.bgr_to_rgb(self._matrix))
                 self._push_bw_image()
             else:
                 self._show_default_image()
@@ -264,7 +264,7 @@ class DrawingCanvas(ttk.Frame):
                 self.display(image_processing.bgr_to_rgb(image))
                 self.update()
             else:
-                self.__colorized_image_subject.notify(reset=True)
+                self._colorized_image_subject.notify(reset=True)
                 self._show_default_image()
                 return
             self._colorize_ct(image_processing.read_image(self._state['ref']),
@@ -275,11 +275,11 @@ class DrawingCanvas(ttk.Frame):
         self._disable_drawing = True
         self._waiting_indicate = gui.create_info_window("Performing colorization. Please wait...")
         self._ct_async_task.run(ref, bw)
-        self.after(self.__DELAY_TIME, self._check_for_ct_result)
+        self.after(self._DELAY_TIME, self._check_for_ct_result)
 
     def _init_bw_matrix(self, matrix):
-        self.__matrix = matrix
-        self.__color_matrix = matrix.copy()
+        self._matrix = matrix
+        self._color_matrix = matrix.copy()
 
     def _show_default_image(self):
         matrix = image_processing.read_image('../assets/info_load.bmp')
@@ -289,8 +289,8 @@ class DrawingCanvas(ttk.Frame):
         self.display(matrix)
 
     def _init_colorized_image_subject(self):
-        self.__colorized_image_subject = ColorizedImageSubject()
+        self._colorized_image_subject = ColorizedImageSubject()
 
     def _push_bw_image(self):
-        result = image_processing.bgr_to_rgb(self.__matrix)
-        self.__colorized_image_subject.notify(x_start=0, y_start=0, result=result, fill=True)
+        result = image_processing.bgr_to_rgb(self._matrix)
+        self._colorized_image_subject.notify(x_start=0, y_start=0, result=result, fill=True)

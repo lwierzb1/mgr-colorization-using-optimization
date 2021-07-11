@@ -6,13 +6,13 @@ class PencilConfigObserver(Observer):
     def __init__(self):
         super().__init__()
         self.hex = HEX_BLACK
-        self.rgb = RGB_BLACK
+        self.bgr = RGB_BLACK
         self.width = 1
 
     def update_subject(self, **kwargs):
         width_value = kwargs.get('width')
         hex_value = kwargs.get('hex')
-        rgb_value = kwargs.get('rgb')
+        bgr_value = kwargs.get('bgr')
 
         if width_value is not None:
             self.width = width_value
@@ -20,5 +20,5 @@ class PencilConfigObserver(Observer):
         if hex_value is not None:
             self.hex = hex_value
 
-        if rgb_value is not None:
-            self.rgb = rgb_value
+        if bgr_value is not None:
+            self.bgr = bgr_value

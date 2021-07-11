@@ -4,24 +4,6 @@ import numpy as np
 
 
 class NeighborSolver(abc.ABC):
-    """
-           A class used to solve finding Y channel value of neighbor for given pixel.
-
-           Attributes
-           ----------
-           __center
-               pixel around which we are looking for neighbors
-
-          __WINDOW_WIDTH
-               the width of the search window
-
-           Methods
-           -------
-           find_neighbors(weights)
-               Finds neighbors for given pixel.
-               If the analyzed pixel is the pixel around which we are looking for neighbors, the weight should be increased
-           """
-
     def __init__(self):
         pass
 

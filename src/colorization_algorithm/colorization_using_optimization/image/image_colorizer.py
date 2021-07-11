@@ -24,7 +24,7 @@ class ImageColorizer(abstract_colorizer.AbstractColorizer):
 
     def __init__(self, grayscale, marked):
         super().__init__(grayscale, marked)
-        self.__colorization_solver = colorization_solver.ColorizationSolver(self._grayscale_matrix, self._marked_matrix)
+        self._colorization_solver = colorization_solver.ColorizationSolver(self._grayscale_matrix, self._marked_matrix)
 
     def colorize(self):
-        return self.__colorization_solver.solve()
+        return self._colorization_solver.solve()

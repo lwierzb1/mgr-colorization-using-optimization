@@ -37,9 +37,6 @@ class VideoDisplayCanvas(ttk.Frame, Observer):
         result = kwargs.get('result')
         self.display(result)
 
-    def get_result(self):
-        return self._image_array
-
     def _init_canvas(self, input_matrix):
         self._image = None
         self._raw_image = None
@@ -48,6 +45,6 @@ class VideoDisplayCanvas(ttk.Frame, Observer):
         self._canvas.pack()
 
     def _show_default_image(self):
-        matrix = read_image('../../assets/info_idle.bmp')
+        matrix = read_image('../assets/info_idle.bmp')
         self._init_canvas(matrix)
         self.display(matrix)

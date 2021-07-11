@@ -5,8 +5,7 @@ from src.observer.colorized_image_observer import ColorizedImageObserver
 
 
 class ColorizedImageObserverTestCase(TestCase):
-    def __init__(self, methodName='runTest'):
-        super().__init__(methodName)
+    def setUp(self):
         self._image_observer = ColorizedImageObserver()
 
     def test_update_subject(self):

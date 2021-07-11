@@ -12,7 +12,6 @@ class DrawBehaviour:
         self._old_x = None
         self._old_y = None
         self._history = dict()
-        self.created_lines = []
         self.executed_commands = []
         self._undo_commands = []
 

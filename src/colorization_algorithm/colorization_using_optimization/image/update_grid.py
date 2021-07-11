@@ -24,18 +24,6 @@ class UpdateGrid:
 
         return x_start, y_start, x_stop, y_stop
 
-    def _resolve_nearest_cells(self, e, offset_x=0, offset_y=0):
-        x = e.x
-        y = e.y
-        if e.x + offset_x >= 0:
-            x = e.x + offset_x
-        if e.y + offset_y >= 0:
-            y = e.y + offset_y
-
-        row_index = self._get_row_index_to_update(y)
-        column_index = self._get_column_index_to_update(x)
-        return row_index, column_index
-
     def get_sub_array(self, x_start, y_start, x_stop, y_stop):
         merged_rows = None
         for r in range(y_start, y_stop + 1):
@@ -57,6 +45,18 @@ class UpdateGrid:
         for i in range(c_idx):
             pixel_col += self._grid[0][i].width()
         return pixel_col
+
+    def _resolve_nearest_cells(self, e, offset_x=0, offset_y=0):
+        x = e.x
+        y = e.y
+        if e.x + offset_x >= 0:
+            x = e.x + offset_x
+        if e.y + offset_y >= 0:
+            y = e.y + offset_y
+
+        row_index = self._get_row_index_to_update(y)
+        column_index = self._get_column_index_to_update(x)
+        return row_index, column_index
 
     def _merge_columns_in_row(self, r_idx, c_start, c_stop):
         merged_columns = None

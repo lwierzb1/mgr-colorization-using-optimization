@@ -4,6 +4,7 @@ from tkinter import ttk
 import PIL
 import cv2
 import numpy as np
+from PIL import Image, ImageTk
 
 import src.observer.observer
 from src.colorization_algorithm.colorization_using_optimization.image import image_colorizer_multiprocess
@@ -27,7 +28,7 @@ class DisplayCanvas(tk.ttk.Frame, src.observer.observer.Observer):
 
     def display(self, array):
         self.image_array = array
-        self._raw_image = PIL.ImageTk.PhotoImage(image=PIL.Image.fromarray(array))
+        self._raw_image = ImageTk.PhotoImage(image=PIL.Image.fromarray(array))
         self._image = self._canvas.create_image(0, 0, image=self._raw_image, anchor="nw")
         self.update()
 
@@ -48,7 +49,6 @@ class DisplayCanvas(tk.ttk.Frame, src.observer.observer.Observer):
             self._canvas.config(height=result.shape[0])
             self._canvas.config(width=result.shape[1])
         else:
-            # array = self._image_array.copy()
             needs_gray_detector = self._check_if_needs_gray_detection(reference, x_start, y_start)
             if needs_gray_detector:
                 result = self._remove_grayscale_pixels_before_merge(result, x_start, y_start)

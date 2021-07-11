@@ -13,11 +13,11 @@ class NeighborOptimizedSolver(NeighborSolver):
 
     def __init__(self):
         super().__init__()
-        self.__WINDOW_WIDTH = 3
+        self._WINDOW_WIDTH = 3
 
     def find_neighbors(self, center, y_channel):
         center = np.array(center, dtype=np.float32)
-        return find_neighbors_optimized(y_channel, center, self.__WINDOW_WIDTH)
+        return find_neighbors_optimized(y_channel, center, self._WINDOW_WIDTH)
 
 
 @numba.jit(nopython=True, cache=True, fastmath=True, nogil=True)

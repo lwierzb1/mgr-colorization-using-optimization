@@ -3,13 +3,13 @@ from unittest import TestCase
 from unittest.mock import create_autospec
 
 from src.observer.observer import Observer
-from src.subject.colorization_process import ColorizationProcessSubject
+from src.subject.colorized_image import ColorizedImageSubject
 
 
-class ColorizationProcessSubjectTestCase(TestCase):
+class ColorizedImageSubjectTestCase(TestCase):
     def __init__(self, methodName='runTest'):
         super().__init__(methodName)
-        self._colorization_process_subject = ColorizationProcessSubject()
+        self._colorization_process_subject = ColorizedImageSubject()
         self._observer = create_autospec(spec=Observer)
 
     def test_update(self):

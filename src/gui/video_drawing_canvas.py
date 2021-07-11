@@ -34,7 +34,7 @@ class VideoDrawingCanvas(ttk.Frame):
         self._cuo_async_task = None
         self._waiting_indicate = None
         self._disable_drawing = False
-        self.__DELAY_TIME = 200
+        self._DELAY_TIME = 200
         self._state = dict()
         self._state['stop'] = []
         self._colorization_process_subject = ColorizationProcessSubject()
@@ -92,13 +92,13 @@ class VideoDrawingCanvas(ttk.Frame):
         if self._disable_drawing:
             return
         self._draw_behaviour.draw(e)
-        self.__update_behaviour.on_motion(e)
+        self._update_behaviour.on_motion(e)
 
     def on_mouse_click(self, e):
         if self._disable_drawing:
             return
         self._draw_behaviour.draw_dot(e)
-        self.__update_behaviour.on_click(e)
+        self._update_behaviour.on_click(e)
 
     def on_mouse_release(self, e):
         if self._disable_drawing:
@@ -157,10 +157,10 @@ class VideoDrawingCanvas(ttk.Frame):
         self._pencil_config.restore(hint)
         obj.x = hint['start'][0]
         obj.y = hint['start'][1]
-        self.__update_behaviour.on_click(obj)
+        self._update_behaviour.on_click(obj)
         obj.x = hint['stop'][0]
         obj.y = hint['stop'][1]
-        self.__update_behaviour.on_click(obj)
+        self._update_behaviour.on_click(obj)
 
     def _colorize_ct(self):
         self._video_colorizer = VideoTransferColorizer(self._colorized_image_subject, self._video_filename)
@@ -175,7 +175,7 @@ class VideoDrawingCanvas(ttk.Frame):
         self._colorization_process_subject.notify(start=False)
         self._cuo_async_task = CTAsyncTaskVideo(self._video_colorizer)
         self._cuo_async_task.run(self._ct_image_ref)
-        self.after(self.__DELAY_TIME, self._check_for_ct_result)
+        self.after(self._DELAY_TIME, self._check_for_ct_result)
 
     def _colorize_cuo(self):
         self._disable_drawing = True
@@ -183,7 +183,7 @@ class VideoDrawingCanvas(ttk.Frame):
         color = self._get_scribbles_matrix()
         self._cuo_async_task = CUOAsyncTaskVideo(self._video_colorizer)
         self._cuo_async_task.run(color)
-        self.after(self.__DELAY_TIME, self._check_for_cuo_result)
+        self.after(self._DELAY_TIME, self._check_for_cuo_result)
 
     def _restore_colorize_cuo(self, counter):
         self._disable_drawing = True
@@ -191,7 +191,7 @@ class VideoDrawingCanvas(ttk.Frame):
         color = self._get_scribbles_matrix_restore(counter)
         self._cuo_async_task = CUOAsyncTaskVideo(self._video_colorizer)
         self._cuo_async_task.run(color)
-        self.after(self.__DELAY_TIME, self._check_for_cuo_result)
+        self.after(self._DELAY_TIME, self._check_for_cuo_result)
 
     def _check_for_cuo_result(self):
         if self._cuo_async_task.finished:
@@ -212,7 +212,7 @@ class VideoDrawingCanvas(ttk.Frame):
             self._disable_drawing = False
             self._colorization_process_subject.notify(start=True)
         else:
-            self.after(self.__DELAY_TIME, self._check_for_cuo_result)
+            self.after(self._DELAY_TIME, self._check_for_cuo_result)
 
     def _check_for_ct_result(self):
         if self._cuo_async_task.finished:
@@ -223,12 +223,12 @@ class VideoDrawingCanvas(ttk.Frame):
                 self._colorization_process_subject.notify(start=True)
                 return
         else:
-            self.after(self.__DELAY_TIME, self._check_for_ct_result)
+            self.after(self._DELAY_TIME, self._check_for_ct_result)
 
     def _colorize(self):
         window = create_info_window("Performing colorization. Please wait...")
         bw, color = self._get_colorization_input()
-        x, y, result = self.__update_behaviour.perform_colorize(bw, color)
+        x, y, result = self._update_behaviour.perform_colorize(bw, color)
         result = bgr_matrix_to_image(result)
         result = bgr_to_rgb(result)
         self._colorized_image_subject.notify(x_start=x, y_start=y, result=result)
@@ -278,7 +278,7 @@ class VideoDrawingCanvas(ttk.Frame):
         self._pencil_config.pack(side=tk.LEFT, padx=20)
 
     def _init_update_behaviour(self):
-        self.__update_behaviour = UpdateBehaviour(self._matrix, self._pencil_config.pencil_config_subject)
+        self._update_behaviour = UpdateBehaviour(self._matrix, self._pencil_config.pencil_config_subject)
 
     def _init_draw_behaviour(self):
         self._draw_behaviour = DrawBehaviour(self._canvas, self._pencil_config.pencil_config_subject)
