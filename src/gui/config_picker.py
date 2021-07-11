@@ -120,7 +120,7 @@ class ConfigPicker(ttk.Frame):
         check_button.grid(column=1, row=7, sticky='e', padx=(0, 10))
 
     def _init_accept_button(self):
-        button = ttk.Button(self, text='ACCEPT', width=40, style='AccentButton', command=lambda: self._save_config())
+        button = ttk.Button(self, text='ACCEPT', width=40, style='AccentButton', command=self._save_config)
         button.grid(row=8, column=0, columnspan=2, pady=10)
 
     def _save_config(self):

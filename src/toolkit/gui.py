@@ -36,7 +36,7 @@ def create_info_confirm_window(text):
     label = ttk.Label(window, text=text, style="BW.TLabel")
     label.pack(padx=10, pady=10)
 
-    button = ttk.Button(window, style='AccentButton', text="OK", command=lambda: window.destroy())
+    button = ttk.Button(window, style='AccentButton', text="OK", command=window.destroy)
     button.pack(fill=tk.BOTH, pady=10, padx=10)
 
     window.lift()
