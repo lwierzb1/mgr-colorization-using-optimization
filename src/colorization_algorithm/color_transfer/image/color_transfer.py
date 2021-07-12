@@ -74,6 +74,21 @@ class ColorTransfer:
         luminance = cv2.copyMakeBorder(luminance, r, r, r, r, cv2.BORDER_CONSTANT, 0)
         return self._neighbor_std_dev_core(luminance, r)
 
+    def _get_k_samples(self, reference_img):
+        samples = []
+        color_labels, color_centers = self.k_mean(reference_img)
+
+        x = reference_img.reshape((-1, 3))
+        for i in range(8):
+            y = x.copy()
+            y[color_labels.flatten() != i] = [0, 0, 0]
+            y = y.reshape(reference_img.shape)
+            sub_samples = self._find_samples(y)
+            for ii in sub_samples:
+                samples.append([ii[1], ii[0]])
+
+        return samples
+
     @staticmethod
     @numba.jit(nopython=True, fastmath=True, cache=True)
     def _neighbor_std_dev_core(luminance, r):
@@ -117,21 +132,6 @@ class ColorTransfer:
                 jitter_samples.append([rand_x, rand_y])
 
         return jitter_samples
-
-    def _get_k_samples(self, reference_img):
-        samples = []
-        color_labels, color_centers = self.k_mean(reference_img)
-
-        x = reference_img.reshape((-1, 3))
-        for i in range(8):
-            y = x.copy()
-            y[color_labels.flatten() != i] = [0, 0, 0]
-            y = y.reshape(reference_img.shape)
-            sub_samples = self._find_samples(y)
-            for ii in sub_samples:
-                samples.append([ii[1], ii[0]])
-
-        return samples
 
     @staticmethod
     def _find_samples(img):

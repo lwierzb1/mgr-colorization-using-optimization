@@ -153,7 +153,7 @@ class MainWindow:
 
     def _pick_config(self):
         window = tk.Toplevel(self._root)
-        src.gui.config_picker.ConfigPicker(window, self._callback)
+        src.gui.config_picker.ConfigPicker(window, self._config_callback)
         window.attributes('-topmost', 'true')
         window.update_idletasks()
         screen_width = window.winfo_screenwidth()
@@ -269,7 +269,7 @@ class MainWindow:
     def _get_working_directory():
         return os.path.dirname(os.path.abspath(__file__)).replace('\\', '/')
 
-    def _callback(self, conf):
+    def _config_callback(self, conf):
         SingletonConfig().mode = conf['mode']
         SingletonConfig().colorization_algorithm = conf['colorization_algorithm']
         SingletonConfig().linear_algorithm = conf['linear_algorithm']
