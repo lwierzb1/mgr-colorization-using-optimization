@@ -7,8 +7,7 @@ from src.subject.pencil_config import PencilConfigSubject
 
 
 class PencilColorChooserTestCase(TestCase):
-    def __init__(self, methodName='runTest'):
-        super().__init__(methodName)
+    def setUp(self):
         self._config_subject = PencilConfigSubject()
         self._config_observer = PencilConfigObserver()
         self._config_subject.attach(self._config_observer)

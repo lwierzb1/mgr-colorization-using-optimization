@@ -7,8 +7,7 @@ from src.subject.colorization_process import ColorizationProcessSubject
 
 
 class ColorizationProcessSubjectTestCase(TestCase):
-    def __init__(self, methodName='runTest'):
-        super().__init__(methodName)
+    def setUp(self):
         self._colorization_process_subject = ColorizationProcessSubject()
         self._observer = create_autospec(spec=Observer)
 

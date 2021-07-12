@@ -7,8 +7,7 @@ from src.subject.pencil_config import PencilConfigSubject
 
 
 class DrawBehaviourTestCase(TestCase):
-    def __init__(self, methodName='runTest'):
-        super().__init__(methodName)
+    def setUp(self):
         self._canvas = tk.Canvas()
         self._pencil_config = PencilConfigSubject()
         self._draw_behaviour = DrawBehaviour(self._canvas, self._pencil_config)
@@ -40,4 +39,3 @@ class DrawBehaviourTestCase(TestCase):
         event.x = x
         event.y = y
         return event
-

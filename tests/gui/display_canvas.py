@@ -5,8 +5,7 @@ from src.gui.display_canvas import DisplayCanvas
 
 
 class DisplayCanvasTestCase(TestCase):
-    def __init__(self, methodName='runTest'):
-        super().__init__(methodName)
+    def setUp(self):
         self._display_canvas = DisplayCanvas(None)
 
     def test_display(self):

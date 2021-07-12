@@ -7,8 +7,7 @@ from src.subject.colorization_process import ColorizationProcessSubject
 
 
 class StyledObserverButtonTestCase(TestCase):
-    def __init__(self, methodName='runTest'):
-        super().__init__(methodName)
+    def setUp(self):
         self._subject = ColorizationProcessSubject()
         self._button = StyledObserverButton()
         self._subject.attach(self._button)

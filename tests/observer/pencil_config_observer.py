@@ -5,8 +5,7 @@ from src.observer.pencil_config_observer import PencilConfigObserver
 
 
 class PencilConfigObserverTestCase(TestCase):
-    def __init__(self, methodName='runTest'):
-        super().__init__(methodName)
+    def setUp(self) -> None:
         self._image_observer = PencilConfigObserver()
 
     def test_update_subject(self):

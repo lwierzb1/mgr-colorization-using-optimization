@@ -24,7 +24,3 @@ class ImageProcessingToolkitTestCase(TestCase):
         hex_value = '#ff0000'
         red = [0, 0, 255]
         self.assertEqual(red, hex_to_bgr(hex_value))
-
-
-if __name__ == '__main__':
-    main()

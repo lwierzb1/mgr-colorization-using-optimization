@@ -8,6 +8,8 @@ from src.command.line_drawing_command import LineDrawingCommand
 class LineDrawingCommandTestCase(TestCase):
     def __init__(self, methodName='runTest'):
         super().__init__(methodName)
+
+    def setUp(self):
         self._canvas = tk.Canvas()
         self._command = LineDrawingCommand(self._canvas, start=(100, 100), stop=(200, 200),
                                            width=1, fill='#000000')
