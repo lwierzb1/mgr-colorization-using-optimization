@@ -1,6 +1,6 @@
 ### Praca magisterska 
-
-### Łukasz Wierzbicki, Politechnika Warszawska
+### Koloryzacja zdjęć i sekwencji wideo
+### Łukasz Wierzbicki, 277446 Politechnika Warszawska
 
 
 # Proces uruchamiania aplikacji
@@ -9,7 +9,7 @@
 
 ### Wymagania systemowe
 
-- python w wersji 3 dostępny z linii poleceń pod etykietą `python3`
+- python w wersji 3 dostępny z linii poleceń pod etykietą `python`
 - manager pakietów `pip`
 
 ### Proces uruchamiania
@@ -20,13 +20,8 @@ Należy uruchomić skrypt `run.bat`
 
 ### Wymagania systemowe
 
-- python w wersji 3 dostępny z linii poleceń pod etykietą `python3`
+- python w wersji 3 dostępny z linii poleceń pod etykietą `python`
 
 ### Proces uruchamiania aplikacji
 
 Należy uruchomić skrypt `run.sh`.
-
-
-# Uwagi
-
-W zależności od ustawionych zmiennych środowiskowych etykieta `python3` może być zmieniona na etykietę `python`.
