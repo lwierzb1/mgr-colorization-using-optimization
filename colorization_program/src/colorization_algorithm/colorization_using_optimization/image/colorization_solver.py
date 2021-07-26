@@ -1,6 +1,6 @@
-__author__ = "Lukasz Wierzbicki"
+__author__ = "Łukasz Wierzbicki"
 __version__ = "1.0.0"
-__maintainer__ = "Lukasz Wierzbicki"
+__maintainer__ = "Łukasz Wierzbicki"
 __email__ = "01113202@pw.edu.pl"
 
 import time
@@ -12,9 +12,9 @@ from colorization_program.src.colorization_algorithm.colorization_using_optimiza
     weights_cpu_solver
 from colorization_program.src.toolkit import mathematical as math_toolkit, image_processing as image_toolkit
 
-__author__ = "Lukasz Wierzbicki"
+__author__ = "Łukasz Wierzbicki"
 __version__ = "1.0.0"
-__maintainer__ = "Lukasz Wierzbicki"
+__maintainer__ = "Łukasz Wierzbicki"
 __email__ = "01113202@pw.edu.pl"
 
 

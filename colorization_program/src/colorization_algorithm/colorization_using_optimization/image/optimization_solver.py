@@ -1,6 +1,6 @@
-__author__ = "Lukasz Wierzbicki"
+__author__ = "Łukasz Wierzbicki"
 __version__ = "1.0.0"
-__maintainer__ = "Lukasz Wierzbicki"
+__maintainer__ = "Łukasz Wierzbicki"
 __email__ = "01113202@pw.edu.pl"
 
 import numpy as np
@@ -8,35 +8,24 @@ import scipy
 import scipy.sparse as sc_sparse
 import scipy.sparse.linalg as sc_linalg
 
-from colorization_program.src.config.singleton_config import SingletonConfig
 from colorization_program.src.toolkit import mathematical
 
 
 class OptimizationSolver:
     """
        A class used to obtain U and V channels based on weights and hints provided by user.
+    """
 
-       Attributes
-       ----------
-       _mat_a
-           matrix with weights (https://www.cs.huji.ac.il/~yweiss/Colorization/)
-
-       Methods
-       -------
-       optimize(u_channel, v_channel)
-           Creates new U and V channels for output image based on marked U and V channels.
-       """
-
-    def __init__(self, mat_a, has_hints):
+    def __init__(self, mat_a, has_hints, config):
         self._mat_a = mat_a
         self._IMAGE_H, self._IMAGE_W = has_hints.shape
         self._IMAGE_SIZE = self._IMAGE_H * self._IMAGE_W
         self._idx_colored = np.nonzero(has_hints.reshape(self._IMAGE_SIZE, order='F'))
+        self._config = config
 
     def optimize(self, u_channel, v_channel):
-        config = SingletonConfig()
-        jacobi_approximation = config.jacobi_approximation
-        lin_alg = config.linear_algorithm
+        jacobi_approximation = self._config.jacobi_approximation
+        lin_alg = self._config.linear_algorithm
 
         if lin_alg == 'jacobi':
             print('using jacobi', jacobi_approximation)

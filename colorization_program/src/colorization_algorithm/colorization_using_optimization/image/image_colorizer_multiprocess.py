@@ -1,6 +1,6 @@
-__author__ = "Lukasz Wierzbicki"
+__author__ = "Łukasz Wierzbicki"
 __version__ = "1.0.0"
-__maintainer__ = "Lukasz Wierzbicki"
+__maintainer__ = "Łukasz Wierzbicki"
 __email__ = "01113202@pw.edu.pl"
 
 import multiprocessing
@@ -11,14 +11,10 @@ from colorization_program.src.colorization_algorithm.colorization_using_optimiza
     colorization_optimized_solver, abstract_colorizer
 from colorization_program.src.config.singleton_config import SingletonConfig
 
-__author__ = "Lukasz Wierzbicki"
+__author__ = "Łukasz Wierzbicki"
 __version__ = "1.0.0"
-__maintainer__ = "Lukasz Wierzbicki"
+__maintainer__ = "Łukasz Wierzbicki"
 __email__ = "01113202@pw.edu.pl"
-
-
-def _run_single_solver_for_result(solver):
-    return solver.solve()
 
 
 class ImageColorizerMultiprocess(abstract_colorizer.AbstractColorizer):
@@ -50,10 +46,14 @@ class ImageColorizerMultiprocess(abstract_colorizer.AbstractColorizer):
 
     def _run_solvers_for_result(self):
         pool = multiprocessing.Pool(self._SPLIT_FACTOR)
-        futures = pool.map(_run_single_solver_for_result, self._colorization_solvers)
+        futures = pool.map(self._run_single_solver_for_result, self._colorization_solvers)
         pool.close()
         pool.join()
         return futures
+
+    @staticmethod
+    def _run_single_solver_for_result(solver):
+        return solver.solve()
 
     def _initialize_colorization_solvers(self):
         solvers = []
@@ -61,5 +61,5 @@ class ImageColorizerMultiprocess(abstract_colorizer.AbstractColorizer):
         marked_arrays = np.array_split(self._marked_matrix, self._SPLIT_FACTOR)
         for i in range(self._SPLIT_FACTOR):
             solvers.append(
-                colorization_optimized_solver.ColorizationOptimizedSolver(grayscale_arrays[i], marked_arrays[i]))
+                colorization_optimized_solver.ColorizationOptimizedSolver(grayscale_arrays[i], marked_arrays[i], SingletonConfig()))
         return solvers

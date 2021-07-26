@@ -1,6 +1,6 @@
-__author__ = "Lukasz Wierzbicki"
+__author__ = "Łukasz Wierzbicki"
 __version__ = "1.0.0"
-__maintainer__ = "Lukasz Wierzbicki"
+__maintainer__ = "Łukasz Wierzbicki"
 __email__ = "01113202@pw.edu.pl"
 
 import time
@@ -11,6 +11,7 @@ import scipy.sparse
 from colorization_program.src.colorization_algorithm.colorization_using_optimization.image.optimization_solver import OptimizationSolver
 from colorization_program.src.colorization_algorithm.colorization_using_optimization.image.weights_optimized_solver import \
     WeightsOptimizedSolver
+from colorization_program.src.config.singleton_config import SingletonConfig
 from colorization_program.src.toolkit import mathematical as mtk, image_processing
 
 
@@ -43,24 +44,15 @@ class ColorizationOptimizedSolver:
     """
        A class used to solve Colorization problem. Using OptimizationSolver to colorize image.
        Gets grayscale and marked matrices in BGR space, returns colorized image in BGR space.
-
-       Attributes
-       ----------
-       _grayscale_bgr_matrix
-           instance of CNN neural network
-
-       Methods
-       -------
-       solve()
-           Colorizes input grayscale image using CNN.
        """
 
-    def __init__(self, grayscale_bgr_matrix, marked_bgr_matrix):
+    def __init__(self, grayscale_bgr_matrix, marked_bgr_matrix, config):
         self._grayscale_bgr_matrix = grayscale_bgr_matrix
         self._marked_bgr_matrix = marked_bgr_matrix
         self._IMAGE_H, self._IMAGE_W, _ = grayscale_bgr_matrix.shape
         self._IMAGE_SIZE = self._IMAGE_W * self._IMAGE_H
         self._weights_solver = WeightsOptimizedSolver()
+        self._config = config
 
     def solve(self):
         # split to YUV channels
@@ -74,7 +66,7 @@ class ColorizationOptimizedSolver:
         s2 = time.time()
         print('mapping to sparse took: ', s2 - s1)
         # perform optimization
-        solver = OptimizationSolver(mat_a, has_hints)
+        solver = OptimizationSolver(mat_a, has_hints, self._config)
 
         s3 = time.time()
         new_u, new_v = solver.optimize(u_channel, v_channel)
